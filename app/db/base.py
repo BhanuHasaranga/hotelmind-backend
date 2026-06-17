@@ -23,11 +23,3 @@ class Base(DeclarativeBase):
         nullable=False,
     )
 
-
-# ── Import all models here so Alembic autogenerate detects them ───────────────
-# Uncomment each block as the domain is implemented.
-
-from app.models.hotel import Hotel, Branch, Floor, RoomType, Room, Amenity, RoomTypeAmenity  # noqa: E402, F401
-from app.models.booking import Guest, Reservation, OccupancySnapshot  # noqa: E402, F401
-from app.models.restaurant import FoodCategory, MenuItem, RestaurantTable, RestaurantOrder, OrderItem  # noqa: E402, F401
-from app.models.staff import Department, Employee, Schedule, Attendance  # noqa: E402, F401
