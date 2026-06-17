@@ -32,6 +32,9 @@ from app.services.hotel import HotelService
 
 router = APIRouter(prefix="/hotels", tags=["Hotels"])
 
+# Separate router for /hotels/branches/... paths to avoid collision with /{hotel_id}
+branches_router = APIRouter(prefix="/hotels/branches", tags=["Hotels"])
+
 
 def get_hotel_service(db: AsyncSession = Depends(get_db)) -> HotelService:
     return HotelService(
@@ -84,14 +87,14 @@ async def create_branch(hotel_id: uuid.UUID, payload: BranchCreate, svc: Service
     return await svc.create_branch(payload)
 
 
-@router.put("/branches/{branch_id}", response_model=BranchResponse)
+@branches_router.put("/{branch_id}", response_model=BranchResponse)
 async def update_branch(branch_id: uuid.UUID, payload: BranchUpdate, svc: ServiceDep):
     return await svc.update_branch(branch_id, payload)
 
 
 # ── Room Types ────────────────────────────────────────────────────────────────
 
-@router.get("/branches/{branch_id}/room-types", response_model=list[RoomTypeResponse])
+@branches_router.get("/{branch_id}/room-types", response_model=list[RoomTypeResponse])
 async def list_room_types(branch_id: uuid.UUID, svc: ServiceDep):
     return await svc.list_room_types(branch_id)
 
@@ -115,7 +118,7 @@ async def create_floor(payload: FloorCreate, svc: ServiceDep):
 
 # ── Rooms ─────────────────────────────────────────────────────────────────────
 
-@router.get("/branches/{branch_id}/rooms", response_model=list[RoomResponse])
+@branches_router.get("/{branch_id}/rooms", response_model=list[RoomResponse])
 async def list_rooms(
     branch_id: uuid.UUID,
     svc: ServiceDep,

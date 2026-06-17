@@ -66,7 +66,12 @@ class OrderRepository(BaseRepository[RestaurantOrder]):
         skip: int = 0,
         limit: int = 100,
     ) -> Sequence[RestaurantOrder]:
-        query = select(RestaurantOrder).offset(skip).limit(limit)
+        query = (
+            select(RestaurantOrder)
+            .options(selectinload(RestaurantOrder.items).selectinload(OrderItem.menu_item))
+            .offset(skip)
+            .limit(limit)
+        )
         if branch_id:
             query = query.where(RestaurantOrder.branch_id == branch_id)
         if status:

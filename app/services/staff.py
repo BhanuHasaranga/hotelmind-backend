@@ -50,19 +50,21 @@ class StaffService:
         return await self.employee_repo.get_active(department_id=department_id, skip=skip, limit=limit)
 
     async def get_employee(self, employee_id: uuid.UUID) -> Employee:
-        emp = await self.employee_repo.get(employee_id)
+        emp = await self.employee_repo.get_with_department(employee_id)
         if not emp:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Employee not found")
         return emp
 
     async def create_employee(self, payload: EmployeeCreate) -> Employee:
-        return await self.employee_repo.create(payload.model_dump())
+        new_emp = await self.employee_repo.create(payload.model_dump())
+        return await self.employee_repo.get_with_department(new_emp.id)  # type: ignore[return-value]
 
     async def update_employee(self, employee_id: uuid.UUID, payload: EmployeeUpdate) -> Employee:
-        emp = await self.employee_repo.get(employee_id)
+        emp = await self.employee_repo.get_with_department(employee_id)
         if not emp:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Employee not found")
-        return await self.employee_repo.update(emp, payload.model_dump(exclude_none=True))
+        await self.employee_repo.update(emp, payload.model_dump(exclude_none=True))
+        return await self.employee_repo.get_with_department(employee_id)  # type: ignore[return-value]
 
     async def deactivate_employee(self, employee_id: uuid.UUID) -> None:
         emp = await self.employee_repo.get(employee_id)

@@ -89,7 +89,8 @@ class BookingService:
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Room is already booked for the requested dates",
             )
-        return await self.reservation_repo.create(payload.model_dump())
+        new_res = await self.reservation_repo.create(payload.model_dump())
+        return await self.reservation_repo.get_with_guest(new_res.id)  # type: ignore[return-value]
 
     async def update_reservation(self, reservation_id: uuid.UUID, payload: ReservationUpdate) -> Reservation:
         res = await self.reservation_repo.get(reservation_id)
@@ -104,7 +105,8 @@ class BookingService:
             )
             if conflict:
                 raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Date conflict with existing reservation")
-        return await self.reservation_repo.update(res, data)
+        await self.reservation_repo.update(res, data)
+        return await self.reservation_repo.get_with_guest(reservation_id)  # type: ignore[return-value]
 
     async def _transition(self, reservation_id: uuid.UUID, target_status: str) -> Reservation:
         res = await self.reservation_repo.get(reservation_id)
@@ -120,30 +122,30 @@ class BookingService:
 
     async def confirm(self, reservation_id: uuid.UUID) -> Reservation:
         res = await self._transition(reservation_id, "CONFIRMED")
-        return await self.reservation_repo.update(res, {"status": "CONFIRMED"})
+        await self.reservation_repo.update(res, {"status": "CONFIRMED"})
+        return await self.reservation_repo.get_with_guest(reservation_id)  # type: ignore[return-value]
 
     async def check_in(self, reservation_id: uuid.UUID) -> Reservation:
         res = await self._transition(reservation_id, "CHECKED_IN")
-        updated = await self.reservation_repo.update(res, {"status": "CHECKED_IN"})
-        # Mark room as OCCUPIED
+        await self.reservation_repo.update(res, {"status": "CHECKED_IN"})
         room = await self.room_repo.get(res.room_id)
         if room:
             await self.room_repo.update(room, {"status": "OCCUPIED"})
-        return updated
+        return await self.reservation_repo.get_with_guest(reservation_id)  # type: ignore[return-value]
 
     async def check_out(self, reservation_id: uuid.UUID) -> Reservation:
         res = await self._transition(reservation_id, "CHECKED_OUT")
-        updated = await self.reservation_repo.update(res, {"status": "CHECKED_OUT"})
-        # Release room back to AVAILABLE
+        await self.reservation_repo.update(res, {"status": "CHECKED_OUT"})
         room = await self.room_repo.get(res.room_id)
         if room:
             await self.room_repo.update(room, {"status": "AVAILABLE"})
-        return updated
+        return await self.reservation_repo.get_with_guest(reservation_id)  # type: ignore[return-value]
 
     async def cancel(self, reservation_id: uuid.UUID, payload: CancellationRequest) -> Reservation:
         res = await self._transition(reservation_id, "CANCELLED")
-        return await self.reservation_repo.update(res, {
+        await self.reservation_repo.update(res, {
             "status": "CANCELLED",
             "cancelled_at": datetime.now(timezone.utc),
             "cancellation_reason": payload.reason,
         })
+        return await self.reservation_repo.get_with_guest(reservation_id)  # type: ignore[return-value]

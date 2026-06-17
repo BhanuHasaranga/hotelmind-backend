@@ -51,13 +51,15 @@ class HotelService:
         return hotel
 
     async def create_hotel(self, payload: HotelCreate) -> Hotel:
-        return await self.hotel_repo.create(payload.model_dump())
+        new_hotel = await self.hotel_repo.create(payload.model_dump())
+        return await self.hotel_repo.get_with_branches(new_hotel.id)  # type: ignore[return-value]
 
     async def update_hotel(self, hotel_id: uuid.UUID, payload: HotelUpdate) -> Hotel:
         hotel = await self.hotel_repo.get(hotel_id)
         if not hotel:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Hotel not found")
-        return await self.hotel_repo.update(hotel, payload.model_dump(exclude_none=True))
+        await self.hotel_repo.update(hotel, payload.model_dump(exclude_none=True))
+        return await self.hotel_repo.get_with_branches(hotel_id)  # type: ignore[return-value]
 
     async def deactivate_hotel(self, hotel_id: uuid.UUID) -> None:
         hotel = await self.hotel_repo.get(hotel_id)
@@ -85,18 +87,21 @@ class HotelService:
         return await self.room_type_repo.get_by_branch(branch_id)
 
     async def create_room_type(self, payload: RoomTypeCreate) -> RoomType:
-        return await self.room_type_repo.create(payload.model_dump())
+        new_rt = await self.room_type_repo.create(payload.model_dump())
+        return await self.room_type_repo.get_with_amenities(new_rt.id)  # type: ignore[return-value]
 
     async def update_room_type(self, room_type_id: uuid.UUID, payload: RoomTypeUpdate) -> RoomType:
         rt = await self.room_type_repo.get(room_type_id)
         if not rt:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Room type not found")
-        return await self.room_type_repo.update(rt, payload.model_dump(exclude_none=True))
+        await self.room_type_repo.update(rt, payload.model_dump(exclude_none=True))
+        return await self.room_type_repo.get_with_amenities(room_type_id)  # type: ignore[return-value]
 
     # ── Floors ────────────────────────────────────────────────────────────────
 
     async def create_floor(self, payload: FloorCreate) -> Floor:
-        return await self.floor_repo.create(payload.model_dump())
+        new_floor = await self.floor_repo.create(payload.model_dump())
+        return await self.floor_repo.get_with_rooms(new_floor.id)  # type: ignore[return-value]
 
     # ── Rooms ─────────────────────────────────────────────────────────────────
 
@@ -104,7 +109,8 @@ class HotelService:
         return await self.room_repo.get_by_branch(branch_id, status=status)
 
     async def create_room(self, payload: RoomCreate) -> Room:
-        return await self.room_repo.create(payload.model_dump())
+        new_room = await self.room_repo.create(payload.model_dump())
+        return await self.room_repo.get_with_room_type(new_room.id)  # type: ignore[return-value]
 
     async def update_room_status(self, room_id: uuid.UUID, payload: RoomStatusUpdate) -> Room:
         room = await self.room_repo.get(room_id)
@@ -113,4 +119,5 @@ class HotelService:
         allowed = {"AVAILABLE", "OCCUPIED", "MAINTENANCE", "CLEANING"}
         if payload.status not in allowed:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Status must be one of {allowed}")
-        return await self.room_repo.update(room, {"status": payload.status})
+        await self.room_repo.update(room, {"status": payload.status})
+        return await self.room_repo.get_with_room_type(room_id)  # type: ignore[return-value]

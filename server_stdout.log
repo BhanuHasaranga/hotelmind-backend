@@ -1,0 +1,77 @@
+INFO:     127.0.0.1:56291 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53169 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53172 - "POST /api/v1/hotels/ HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53176 - "POST /api/v1/hotels/a43ecb66-9211-472a-9e4f-c247f8045915/branches HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53178 - "GET /api/v1/hotels/a43ecb66-9211-472a-9e4f-c247f8045915/branches HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53181 - "GET /api/v1/hotels/a43ecb66-9211-472a-9e4f-c247f8045915 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53183 - "PUT /api/v1/hotels/a43ecb66-9211-472a-9e4f-c247f8045915 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53188 - "PUT /api/v1/hotels/branches/13af9fff-6da8-4751-8440-7e1a3cb47264 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53191 - "POST /api/v1/hotels/floors HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53193 - "POST /api/v1/hotels/room-types HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53195 - "GET /api/v1/hotels/branches/13af9fff-6da8-4751-8440-7e1a3cb47264/room-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53197 - "PUT /api/v1/hotels/room-types/2d6a5f4b-1af0-4422-b6bc-05303c59d443 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53199 - "POST /api/v1/hotels/rooms HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53201 - "GET /api/v1/hotels/branches/13af9fff-6da8-4751-8440-7e1a3cb47264/rooms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53203 - "GET /api/v1/hotels/branches/13af9fff-6da8-4751-8440-7e1a3cb47264/rooms?status=AVAILABLE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53207 - "PATCH /api/v1/hotels/rooms/7b503d5f-4352-4654-a26b-3c4026ad4b55/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53209 - "PATCH /api/v1/hotels/rooms/7b503d5f-4352-4654-a26b-3c4026ad4b55/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53211 - "POST /api/v1/bookings/guests HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53213 - "GET /api/v1/bookings/guests/697b2663-5a64-4ce2-89fb-3634af261fd3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53215 - "PUT /api/v1/bookings/guests/697b2663-5a64-4ce2-89fb-3634af261fd3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53217 - "GET /api/v1/bookings/guests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53219 - "POST /api/v1/bookings/reservations HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53223 - "GET /api/v1/bookings/reservations/981bf597-d09f-4af2-9b35-5ffeda304cc8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53225 - "GET /api/v1/bookings/reservations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53227 - "PATCH /api/v1/bookings/reservations/981bf597-d09f-4af2-9b35-5ffeda304cc8/confirm HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53229 - "PATCH /api/v1/bookings/reservations/981bf597-d09f-4af2-9b35-5ffeda304cc8/check-in HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53231 - "GET /api/v1/hotels/branches/13af9fff-6da8-4751-8440-7e1a3cb47264/rooms?status=OCCUPIED HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53233 - "PATCH /api/v1/bookings/reservations/981bf597-d09f-4af2-9b35-5ffeda304cc8/check-out HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53236 - "GET /api/v1/hotels/branches/13af9fff-6da8-4751-8440-7e1a3cb47264/rooms?status=AVAILABLE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53241 - "POST /api/v1/bookings/reservations HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53243 - "PATCH /api/v1/bookings/reservations/e4db87db-6316-4883-82e1-10c33ec699b7/cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53245 - "PUT /api/v1/bookings/reservations/981bf597-d09f-4af2-9b35-5ffeda304cc8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53247 - "POST /api/v1/restaurant/categories HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53249 - "GET /api/v1/restaurant/categories?branch_id=13af9fff-6da8-4751-8440-7e1a3cb47264 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53251 - "POST /api/v1/restaurant/menu-items HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53253 - "GET /api/v1/restaurant/menu-items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53255 - "GET /api/v1/restaurant/menu-items?category_id=f723c9fb-3640-4af3-9f0e-b78e76f6db7c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53259 - "PUT /api/v1/restaurant/menu-items/4533f435-f0a5-4357-b82e-09e22fe7e9a2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53261 - "POST /api/v1/restaurant/tables HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53263 - "GET /api/v1/restaurant/tables?branch_id=13af9fff-6da8-4751-8440-7e1a3cb47264 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53265 - "PATCH /api/v1/restaurant/tables/d3151bb4-d4ba-4d6b-a20f-7f9bc962c2f2/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53267 - "POST /api/v1/restaurant/orders HTTP/1.1" 201 Created
+INFO:     127.0.0.1:49218 - "POST /api/v1/restaurant/orders/d5d647e2-735d-4fb1-b62e-cc8cb7b3d5c8/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49220 - "GET /api/v1/restaurant/orders/d5d647e2-735d-4fb1-b62e-cc8cb7b3d5c8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49224 - "GET /api/v1/restaurant/orders?branch_id=13af9fff-6da8-4751-8440-7e1a3cb47264 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49226 - "POST /api/v1/restaurant/orders/d5d647e2-735d-4fb1-b62e-cc8cb7b3d5c8/items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49228 - "DELETE /api/v1/restaurant/orders/d5d647e2-735d-4fb1-b62e-cc8cb7b3d5c8/items/d697fe7f-88b8-469b-9a4c-eebd9837dafc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49230 - "PATCH /api/v1/restaurant/orders/d5d647e2-735d-4fb1-b62e-cc8cb7b3d5c8/close HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49232 - "POST /api/v1/restaurant/orders HTTP/1.1" 201 Created
+INFO:     127.0.0.1:49234 - "PATCH /api/v1/restaurant/orders/a7f78609-5ede-42b0-ab58-2bc05316cab6/cancel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49236 - "POST /api/v1/staff/departments HTTP/1.1" 201 Created
+INFO:     127.0.0.1:49240 - "GET /api/v1/staff/departments?branch_id=13af9fff-6da8-4751-8440-7e1a3cb47264 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49242 - "POST /api/v1/staff/employees HTTP/1.1" 201 Created
+INFO:     127.0.0.1:49244 - "GET /api/v1/staff/employees/0b0c14fe-38e3-4825-ab60-fc22121384e7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49246 - "GET /api/v1/staff/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49248 - "PUT /api/v1/staff/employees/0b0c14fe-38e3-4825-ab60-fc22121384e7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58327 - "POST /api/v1/staff/schedules HTTP/1.1" 201 Created
+INFO:     127.0.0.1:58331 - "GET /api/v1/staff/schedules?employee_id=0b0c14fe-38e3-4825-ab60-fc22121384e7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58333 - "POST /api/v1/staff/attendance/clock-in HTTP/1.1" 201 Created
+INFO:     127.0.0.1:58335 - "PATCH /api/v1/staff/attendance/7b75296f-3e9b-4001-b805-c11808fa4b7b/clock-out HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58337 - "GET /api/v1/staff/attendance?employee_id=0b0c14fe-38e3-4825-ab60-fc22121384e7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58339 - "POST /api/v1/staff/employees HTTP/1.1" 201 Created
+INFO:     127.0.0.1:58341 - "PATCH /api/v1/staff/employees/ff94e8d8-0486-4563-b610-67e8ca43baca/deactivate HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:58343 - "GET /api/v1/dashboard/summary?branch_id=13af9fff-6da8-4751-8440-7e1a3cb47264 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58345 - "GET /api/v1/dashboard/occupancy?branch_id=13af9fff-6da8-4751-8440-7e1a3cb47264&days=7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58349 - "GET /api/v1/dashboard/revenue?branch_id=13af9fff-6da8-4751-8440-7e1a3cb47264&days=7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58351 - "GET /api/v1/hotels/00000000-0000-0000-0000-000000000000 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58353 - "GET /api/v1/staff/employees/00000000-0000-0000-0000-000000000000 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58355 - "POST /api/v1/bookings/reservations HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:58357 - "POST /api/v1/bookings/guests HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:58359 - "POST /api/v1/restaurant/orders/d5d647e2-735d-4fb1-b62e-cc8cb7b3d5c8/items HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:58361 - "PATCH /api/v1/restaurant/orders/a7f78609-5ede-42b0-ab58-2bc05316cab6/cancel HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:58363 - "PATCH /api/v1/restaurant/orders/d5d647e2-735d-4fb1-b62e-cc8cb7b3d5c8/cancel HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:58365 - "PATCH /api/v1/restaurant/orders/00000000-0000-0000-0000-000000000000/cancel HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58367 - "PATCH /api/v1/hotels/rooms/7b503d5f-4352-4654-a26b-3c4026ad4b55/status HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:58370 - "PATCH /api/v1/staff/attendance/7b75296f-3e9b-4001-b805-c11808fa4b7b/clock-out HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:58372 - "PATCH /api/v1/bookings/reservations/981bf597-d09f-4af2-9b35-5ffeda304cc8/confirm HTTP/1.1" 422 Unprocessable Content

@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import app.models  # noqa: F401 — ensures all SQLAlchemy models register before mapper config
 from app.core.config import settings
 from app.routers import health as health_router
 from app.routers import hotels as hotels_router
@@ -29,6 +30,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health_router.router)
     app.include_router(hotels_router.router, prefix="/api/v1")
+    app.include_router(hotels_router.branches_router, prefix="/api/v1")
     app.include_router(bookings_router.router, prefix="/api/v1")
     app.include_router(restaurant_router.router, prefix="/api/v1")
     app.include_router(staff_router.router, prefix="/api/v1")

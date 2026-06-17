@@ -1,0 +1,14 @@
+INFO:     Started server process [24196]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+C:\bhanu\HotelMind_AI\hotelmind-backend\app\routers\restaurant.py:109: StarletteDeprecationWarning: 'HTTP_422_UNPROCESSABLE_ENTITY' is deprecated. Use 'HTTP_422_UNPROCESSABLE_CONTENT' instead.
+  return await svc.add_item(order_id, payload)
+C:\bhanu\HotelMind_AI\hotelmind-backend\app\routers\restaurant.py:124: StarletteDeprecationWarning: 'HTTP_422_UNPROCESSABLE_ENTITY' is deprecated. Use 'HTTP_422_UNPROCESSABLE_CONTENT' instead.
+  return await svc.cancel_order(order_id)
+C:\bhanu\HotelMind_AI\hotelmind-backend\app\routers\hotels.py:137: StarletteDeprecationWarning: 'HTTP_422_UNPROCESSABLE_ENTITY' is deprecated. Use 'HTTP_422_UNPROCESSABLE_CONTENT' instead.
+  return await svc.update_room_status(room_id, payload)
+C:\bhanu\HotelMind_AI\hotelmind-backend\app\routers\staff.py:105: StarletteDeprecationWarning: 'HTTP_422_UNPROCESSABLE_ENTITY' is deprecated. Use 'HTTP_422_UNPROCESSABLE_CONTENT' instead.
+  return await svc.clock_out(attendance_id, payload)
+C:\bhanu\HotelMind_AI\hotelmind-backend\app\services\booking.py:124: StarletteDeprecationWarning: 'HTTP_422_UNPROCESSABLE_ENTITY' is deprecated. Use 'HTTP_422_UNPROCESSABLE_CONTENT' instead.
+  res = await self._transition(reservation_id, "CONFIRMED")

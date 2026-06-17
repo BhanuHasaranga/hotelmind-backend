@@ -25,6 +25,14 @@ class EmployeeRepository(BaseRepository[Employee]):
     def __init__(self, db: AsyncSession) -> None:
         super().__init__(Employee, db)
 
+    async def get_with_department(self, employee_id: uuid.UUID) -> Employee | None:
+        result = await self.db.execute(
+            select(Employee)
+            .options(selectinload(Employee.department))
+            .where(Employee.id == employee_id)
+        )
+        return result.scalar_one_or_none()
+
     async def get_active(
         self, department_id: uuid.UUID | None = None, skip: int = 0, limit: int = 100
     ) -> Sequence[Employee]:

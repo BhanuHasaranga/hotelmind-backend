@@ -91,13 +91,14 @@ class RestaurantService:
         return order
 
     async def open_order(self, payload: OrderCreate) -> RestaurantOrder:
-        return await self.order_repo.create({
+        new_order = await self.order_repo.create({
             "branch_id": payload.branch_id,
             "table_id": payload.table_id,
             "status": "OPEN",
             "opened_at": datetime.now(timezone.utc),
             "total_amount": Decimal("0.00"),
         })
+        return await self.order_repo.get_with_items(new_order.id)  # type: ignore[return-value]
 
     async def add_item(self, order_id: uuid.UUID, payload: OrderItemCreate) -> RestaurantOrder:
         order = await self.order_repo.get(order_id)
@@ -138,10 +139,16 @@ class RestaurantService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
         if order.status != "OPEN":
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Order is not open")
-        return await self.order_repo.update(order, {"status": "CLOSED", "closed_at": datetime.now(timezone.utc)})
+        await self.order_repo.update(order, {"status": "CLOSED", "closed_at": datetime.now(timezone.utc)})
+        return await self.order_repo.get_with_items(order_id)  # type: ignore[return-value]
 
     async def cancel_order(self, order_id: uuid.UUID) -> RestaurantOrder:
         order = await self.order_repo.get(order_id)
-        if not order or order.status == "CLOSED":
+        if not order:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+        if order.status == "CLOSED":
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Cannot cancel a closed order")
-        return await self.order_repo.update(order, {"status": "CANCELLED"})
+        if order.status == "CANCELLED":
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Order is already cancelled")
+        await self.order_repo.update(order, {"status": "CANCELLED"})
+        return await self.order_repo.get_with_items(order_id)  # type: ignore[return-value]

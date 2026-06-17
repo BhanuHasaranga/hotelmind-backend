@@ -23,7 +23,11 @@ class HotelRepository(BaseRepository[Hotel]):
 
     async def get_all_active(self, skip: int = 0, limit: int = 100) -> Sequence[Hotel]:
         result = await self.db.execute(
-            select(Hotel).where(Hotel.is_active == True).offset(skip).limit(limit)  # noqa: E712
+            select(Hotel)
+            .options(selectinload(Hotel.branches))
+            .where(Hotel.is_active == True)  # noqa: E712
+            .offset(skip)
+            .limit(limit)
         )
         return result.scalars().all()
 
@@ -43,6 +47,14 @@ class RoomTypeRepository(BaseRepository[RoomType]):
     def __init__(self, db: AsyncSession) -> None:
         super().__init__(RoomType, db)
 
+    async def get_with_amenities(self, room_type_id: uuid.UUID) -> RoomType | None:
+        result = await self.db.execute(
+            select(RoomType)
+            .options(selectinload(RoomType.amenities))
+            .where(RoomType.id == room_type_id)
+        )
+        return result.scalar_one_or_none()
+
     async def get_by_branch(self, branch_id: uuid.UUID) -> Sequence[RoomType]:
         result = await self.db.execute(
             select(RoomType)
@@ -56,6 +68,14 @@ class FloorRepository(BaseRepository[Floor]):
     def __init__(self, db: AsyncSession) -> None:
         super().__init__(Floor, db)
 
+    async def get_with_rooms(self, floor_id: uuid.UUID) -> Floor | None:
+        result = await self.db.execute(
+            select(Floor)
+            .options(selectinload(Floor.rooms).selectinload(Room.room_type).selectinload(RoomType.amenities))
+            .where(Floor.id == floor_id)
+        )
+        return result.scalar_one_or_none()
+
     async def get_by_branch(self, branch_id: uuid.UUID) -> Sequence[Floor]:
         result = await self.db.execute(
             select(Floor).where(Floor.branch_id == branch_id)
@@ -67,12 +87,20 @@ class RoomRepository(BaseRepository[Room]):
     def __init__(self, db: AsyncSession) -> None:
         super().__init__(Room, db)
 
+    async def get_with_room_type(self, room_id: uuid.UUID) -> Room | None:
+        result = await self.db.execute(
+            select(Room)
+            .options(selectinload(Room.room_type).selectinload(RoomType.amenities))
+            .where(Room.id == room_id)
+        )
+        return result.scalar_one_or_none()
+
     async def get_by_branch(self, branch_id: uuid.UUID, status: str | None = None) -> Sequence[Room]:
         query = (
             select(Room)
             .join(Floor)
             .where(Floor.branch_id == branch_id)
-            .options(selectinload(Room.room_type))
+            .options(selectinload(Room.room_type).selectinload(RoomType.amenities))
         )
         if status:
             query = query.where(Room.status == status)
