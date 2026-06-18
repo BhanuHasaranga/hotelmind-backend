@@ -54,8 +54,10 @@ async def create_category(payload: FoodCategoryCreate, svc: ServiceDep):
 
 
 @router.get("/menu-items", response_model=list[MenuItemResponse])
-async def list_menu_items(svc: ServiceDep, category_id: uuid.UUID | None = None):
-    return await svc.list_menu_items(category_id)
+async def list_menu_items(
+    svc: ServiceDep, category_id: uuid.UUID | None = None, skip: int = 0, limit: int = 200
+):
+    return await svc.list_menu_items(category_id, skip=skip, limit=limit)
 
 
 @router.post("/menu-items", response_model=MenuItemResponse, status_code=status.HTTP_201_CREATED)

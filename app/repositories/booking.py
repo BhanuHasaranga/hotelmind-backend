@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.booking import Guest, Reservation
+from app.models.hotel import Floor, Room
 from app.repositories.base import BaseRepository
 
 
@@ -68,6 +69,13 @@ class ReservationRepository(BaseRepository[Reservation]):
             .offset(skip)
             .limit(limit)
         )
+        if branch_id:
+            query = (
+                query
+                .join(Room, Reservation.room_id == Room.id)
+                .join(Floor, Room.floor_id == Floor.id)
+                .where(Floor.branch_id == branch_id)
+            )
         if status:
             query = query.where(Reservation.status == status)
         if date_from:

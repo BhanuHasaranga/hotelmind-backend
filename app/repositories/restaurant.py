@@ -27,9 +27,11 @@ class MenuItemRepository(BaseRepository[MenuItem]):
     def __init__(self, db: AsyncSession) -> None:
         super().__init__(MenuItem, db)
 
-    async def get_by_category(self, category_id: uuid.UUID) -> Sequence[MenuItem]:
+    async def get_by_category(
+        self, category_id: uuid.UUID, skip: int = 0, limit: int = 200
+    ) -> Sequence[MenuItem]:
         result = await self.db.execute(
-            select(MenuItem).where(MenuItem.category_id == category_id)
+            select(MenuItem).where(MenuItem.category_id == category_id).offset(skip).limit(limit)
         )
         return result.scalars().all()
 

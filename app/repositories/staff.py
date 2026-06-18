@@ -53,8 +53,10 @@ class ScheduleRepository(BaseRepository[Schedule]):
     def __init__(self, db: AsyncSession) -> None:
         super().__init__(Schedule, db)
 
-    async def get_by_employee(self, employee_id: uuid.UUID, from_date: date | None = None) -> Sequence[Schedule]:
-        query = select(Schedule).where(Schedule.employee_id == employee_id)
+    async def get_by_employee(
+        self, employee_id: uuid.UUID, from_date: date | None = None, skip: int = 0, limit: int = 100
+    ) -> Sequence[Schedule]:
+        query = select(Schedule).where(Schedule.employee_id == employee_id).offset(skip).limit(limit)
         if from_date:
             query = query.where(Schedule.shift_date >= from_date)
         result = await self.db.execute(query)
@@ -65,8 +67,13 @@ class AttendanceRepository(BaseRepository[Attendance]):
     def __init__(self, db: AsyncSession) -> None:
         super().__init__(Attendance, db)
 
-    async def get_by_employee(self, employee_id: uuid.UUID) -> Sequence[Attendance]:
+    async def get_by_employee(
+        self, employee_id: uuid.UUID, skip: int = 0, limit: int = 100
+    ) -> Sequence[Attendance]:
         result = await self.db.execute(
-            select(Attendance).where(Attendance.employee_id == employee_id)
+            select(Attendance)
+            .where(Attendance.employee_id == employee_id)
+            .offset(skip)
+            .limit(limit)
         )
         return result.scalars().all()

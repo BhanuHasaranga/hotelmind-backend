@@ -51,30 +51,68 @@ class DashboardService:
         )
 
     async def get_occupancy_trend(self, branch_id: uuid.UUID, days: int) -> list[DailyOccupancy]:
-        """Returns per-day occupancy for last N days from live reservation data."""
+        """Returns per-day occupancy for last N days — single GROUP BY query."""
         today = date.today()
-        result = []
+        start = today - timedelta(days=days - 1)
         total_rooms, _ = await self._room_counts(branch_id)
+
+        rows_result = await self.db.execute(
+            select(
+                func.date(Reservation.check_in_date).label("day"),
+                func.count(Reservation.id).label("occupied"),
+            )
+            .join(Room, Reservation.room_id == Room.id)
+            .join(Floor, Room.floor_id == Floor.id)
+            .where(
+                Floor.branch_id == branch_id,
+                Reservation.check_in_date >= start,
+                Reservation.check_in_date <= today,
+                Reservation.status.not_in(("CANCELLED", "NO_SHOW")),
+            )
+            .group_by(func.date(Reservation.check_in_date))
+        )
+        occupied_by_day: dict = {r.day: r.occupied for r in rows_result}
+
+        output = []
         for delta in range(days - 1, -1, -1):
             d = today - timedelta(days=delta)
-            occupied = await self._occupied_on_date(branch_id, d)
+            occupied = occupied_by_day.get(d, 0)
             pct = (occupied / total_rooms * 100) if total_rooms else 0.0
-            result.append(DailyOccupancy(
+            output.append(DailyOccupancy(
                 date=d.isoformat(),
                 occupancy_pct=round(pct, 2),
                 occupied_rooms=occupied,
                 total_rooms=total_rooms,
             ))
-        return result
+        return output
 
     async def get_revenue_trend(self, branch_id: uuid.UUID, days: int) -> list[DailyRevenue]:
+        """Returns per-day revenue for last N days — single GROUP BY query."""
         today = date.today()
-        result = []
+        start = today - timedelta(days=days - 1)
+
+        rows_result = await self.db.execute(
+            select(
+                func.date(Reservation.check_in_date).label("day"),
+                func.coalesce(func.sum(Reservation.total_amount), 0).label("revenue"),
+            )
+            .join(Room, Reservation.room_id == Room.id)
+            .join(Floor, Room.floor_id == Floor.id)
+            .where(
+                Floor.branch_id == branch_id,
+                Reservation.check_in_date >= start,
+                Reservation.check_in_date <= today,
+                Reservation.status.not_in(("CANCELLED", "NO_SHOW")),
+            )
+            .group_by(func.date(Reservation.check_in_date))
+        )
+        revenue_by_day: dict = {r.day: Decimal(str(r.revenue)) for r in rows_result}
+
+        output = []
         for delta in range(days - 1, -1, -1):
             d = today - timedelta(days=delta)
-            rev = await self._reservation_revenue(branch_id, d, d)
-            result.append(DailyRevenue(date=d.isoformat(), revenue=rev))
-        return result
+            output.append(DailyRevenue(date=d.isoformat(), revenue=revenue_by_day.get(d, Decimal("0"))))
+        return output
 
     # ── Private helpers ───────────────────────────────────────────────────────
 

@@ -74,8 +74,10 @@ class StaffService:
 
     # ── Schedules ─────────────────────────────────────────────────────────────
 
-    async def list_schedules(self, employee_id: uuid.UUID, from_date: date | None) -> Sequence[Schedule]:
-        return await self.schedule_repo.get_by_employee(employee_id, from_date=from_date)
+    async def list_schedules(
+        self, employee_id: uuid.UUID, from_date: date | None, skip: int = 0, limit: int = 100
+    ) -> Sequence[Schedule]:
+        return await self.schedule_repo.get_by_employee(employee_id, from_date=from_date, skip=skip, limit=limit)
 
     async def create_schedule(self, payload: ScheduleCreate) -> Schedule:
         return await self.schedule_repo.create(payload.model_dump())
@@ -93,5 +95,7 @@ class StaffService:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Already clocked out")
         return await self.attendance_repo.update(record, {"clock_out": payload.clock_out})
 
-    async def list_attendance(self, employee_id: uuid.UUID) -> Sequence[Attendance]:
-        return await self.attendance_repo.get_by_employee(employee_id)
+    async def list_attendance(
+        self, employee_id: uuid.UUID, skip: int = 0, limit: int = 100
+    ) -> Sequence[Attendance]:
+        return await self.attendance_repo.get_by_employee(employee_id, skip=skip, limit=limit)

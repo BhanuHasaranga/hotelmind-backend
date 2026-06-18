@@ -86,8 +86,10 @@ async def list_schedules(
     employee_id: uuid.UUID,
     svc: ServiceDep,
     from_date: date | None = None,
+    skip: int = 0,
+    limit: int = 100,
 ):
-    return await svc.list_schedules(employee_id, from_date)
+    return await svc.list_schedules(employee_id, from_date, skip=skip, limit=limit)
 
 
 @router.post("/schedules", response_model=ScheduleResponse, status_code=status.HTTP_201_CREATED)
@@ -106,5 +108,5 @@ async def clock_out(attendance_id: uuid.UUID, payload: AttendanceClockOut, svc: 
 
 
 @router.get("/attendance", response_model=list[AttendanceResponse])
-async def list_attendance(employee_id: uuid.UUID, svc: ServiceDep):
-    return await svc.list_attendance(employee_id)
+async def list_attendance(employee_id: uuid.UUID, svc: ServiceDep, skip: int = 0, limit: int = 100):
+    return await svc.list_attendance(employee_id, skip=skip, limit=limit)

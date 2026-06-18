@@ -44,7 +44,7 @@ class BookingService:
         return await self.guest_repo.get_all(skip=skip, limit=limit)
 
     async def get_guest(self, guest_id: uuid.UUID) -> Guest:
-        guest = await self.guest_repo.get_with_reservations(guest_id)
+        guest = await self.guest_repo.get(guest_id)
         if not guest:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Guest not found")
         return guest

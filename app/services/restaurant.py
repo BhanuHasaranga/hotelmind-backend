@@ -49,10 +49,12 @@ class RestaurantService:
 
     # ── Menu Items ────────────────────────────────────────────────────────────
 
-    async def list_menu_items(self, category_id: uuid.UUID | None) -> Sequence[MenuItem]:
+    async def list_menu_items(
+        self, category_id: uuid.UUID | None, skip: int = 0, limit: int = 200
+    ) -> Sequence[MenuItem]:
         if category_id:
-            return await self.menu_repo.get_by_category(category_id)
-        return await self.menu_repo.get_all()
+            return await self.menu_repo.get_by_category(category_id, skip=skip, limit=limit)
+        return await self.menu_repo.get_all(skip=skip, limit=limit)
 
     async def create_menu_item(self, payload: MenuItemCreate) -> MenuItem:
         return await self.menu_repo.create(payload.model_dump())
