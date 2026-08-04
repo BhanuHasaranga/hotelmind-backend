@@ -29,6 +29,7 @@ from app.handlers.occupancy_handlers import handle_occupancy_event
 from app.handlers.restaurant_handlers import handle_restaurant_event
 from app.handlers.revenue_handlers import handle_revenue_event
 from app.logging.structured import configure_logging
+from app.redis_cache.dashboard_cache import mark_event_seen
 
 logger = logging.getLogger(__name__)
 
@@ -57,10 +58,11 @@ async def replay(topic: str, from_timestamp: int | None) -> None:
         client_id=f"{settings.KAFKA_CLIENT_ID}-replay",
         auto_offset_reset="earliest",
         enable_auto_commit=False,
-        value_deserializer=lambda v: json.loads(v.decode("utf-8")),
     )
     await consumer.start()
     processed = 0
+    skipped_malformed = 0
+    skipped_duplicate = 0
     try:
         if from_timestamp is not None:
             partitions = consumer.partitions_for_topic(topic) or set()
@@ -71,7 +73,19 @@ async def replay(topic: str, from_timestamp: int | None) -> None:
                     consumer.seek(tp, offset_and_ts.offset)
 
         async for record in consumer:
-            event = record.value
+            try:
+                event = json.loads(record.value.decode("utf-8"))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                skipped_malformed += 1
+                logger.warning("Skipping malformed message during replay", extra={"topic": topic})
+                continue
+
+            event_id = event.get("event_id", str(uuid.uuid4()))
+            first_time = await mark_event_seen(redis, f"replay.{topic}", event_id)
+            if not first_time:
+                skipped_duplicate += 1
+                continue
+
             for handler in handlers:
                 await handler(redis, event)
             processed += 1
@@ -80,7 +94,15 @@ async def replay(topic: str, from_timestamp: int | None) -> None:
     finally:
         await consumer.stop()
         await redis.close()
-        logger.info("Replay complete", extra={"topic": topic, "processed": processed})
+        logger.info(
+            "Replay complete",
+            extra={
+                "topic": topic,
+                "processed": processed,
+                "skipped_malformed": skipped_malformed,
+                "skipped_duplicate": skipped_duplicate,
+            },
+        )
 
 
 def main() -> None:
