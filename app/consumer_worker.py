@@ -14,6 +14,7 @@ from app.consumers.notification_consumer import NotificationConsumer
 from app.consumers.occupancy_consumer import OccupancyConsumer
 from app.consumers.restaurant_consumer import RestaurantConsumer
 from app.consumers.revenue_consumer import RevenueConsumer
+from app.consumers.review_consumer import ReviewConsumer
 from app.logging.structured import configure_logging
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,7 @@ CONSUMER_CLASSES: list[type[BaseConsumer]] = [
     RevenueConsumer,
     OccupancyConsumer,
     RestaurantConsumer,
+    ReviewConsumer,
     MLConsumer,
     DashboardConsumer,
     NotificationConsumer,

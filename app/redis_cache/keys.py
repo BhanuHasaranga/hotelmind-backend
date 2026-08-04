@@ -37,3 +37,7 @@ def booking_count_key(branch_id: str) -> str:
 
 def restaurant_sales_key(branch_id: str) -> str:
     return f"{DASHBOARD_RESTAURANT_SALES}:{branch_id}"
+
+
+def review_sentiment_key(review_id: str) -> str:
+    return f"dashboard:review_sentiment:{review_id}"
