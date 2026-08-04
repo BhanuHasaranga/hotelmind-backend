@@ -2,7 +2,7 @@ name: Deploy to droplet
 
 on:
   push:
-    branches: [master]
+    branches: [main]
 
 jobs:
   deploy:
@@ -23,6 +23,15 @@ jobs:
             docker compose build backend consumer-worker
             docker compose up -d backend consumer-worker
             sleep 8
+            docker compose exec -T backend alembic upgrade head || {
+              echo "Migration failed — rolling back"
+              cd /opt/hotelmind/hotelmind-backend
+              git reset --hard HEAD@{1}
+              cd /opt/hotelmind/hotelmind-infra
+              docker compose build backend consumer-worker
+              docker compose up -d backend consumer-worker
+              exit 1
+            }
             curl -sf http://127.0.0.1:8000/health || {
               echo "Health check failed — rolling back"
               cd /opt/hotelmind/hotelmind-backend
