@@ -144,7 +144,10 @@ class RestaurantService:
             aggregate_type="RestaurantOrder",
             aggregate_id=str(order_id),
             payload=OrderUpdated(
-                order_id=order_id, status=updated.status, changes={"item_added": str(payload.menu_item_id)}
+                order_id=order_id,
+                branch_id=updated.branch_id,
+                status=updated.status,
+                changes={"item_added": str(payload.menu_item_id)},
             ).model_dump(mode="json"),
         )
         await self.publisher.publish(event, RESTAURANT_EVENTS)
@@ -167,7 +170,10 @@ class RestaurantService:
             aggregate_type="RestaurantOrder",
             aggregate_id=str(order_id),
             payload=OrderUpdated(
-                order_id=order_id, status=updated.status, changes={"item_removed": str(item_id)}
+                order_id=order_id,
+                branch_id=updated.branch_id,
+                status=updated.status,
+                changes={"item_removed": str(item_id)},
             ).model_dump(mode="json"),
         )
         await self.publisher.publish(event, RESTAURANT_EVENTS)
@@ -187,7 +193,7 @@ class RestaurantService:
             aggregate_type="RestaurantOrder",
             aggregate_id=str(order_id),
             payload=OrderCompleted(
-                order_id=order_id, status=updated.status, total_amount=updated.total_amount
+                order_id=order_id, branch_id=updated.branch_id, status=updated.status, total_amount=updated.total_amount
             ).model_dump(mode="json"),
         )
         await self.publisher.publish(event, RESTAURANT_EVENTS)
@@ -208,7 +214,9 @@ class RestaurantService:
             event_type="OrderCancelled",
             aggregate_type="RestaurantOrder",
             aggregate_id=str(order_id),
-            payload=OrderCancelled(order_id=order_id, status=updated.status).model_dump(mode="json"),
+            payload=OrderCancelled(
+                order_id=order_id, branch_id=updated.branch_id, status=updated.status
+            ).model_dump(mode="json"),
         )
         await self.publisher.publish(event, RESTAURANT_EVENTS)
         return updated  # type: ignore[return-value]

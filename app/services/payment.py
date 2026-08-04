@@ -27,6 +27,7 @@ class PaymentService:
 
     async def create_payment(self, payload: PaymentCreate) -> Payment:
         payment = await self.payment_repo.create({**payload.model_dump(), "status": "COMPLETED"})
+        branch_id = await self.payment_repo.resolve_branch_id(payment.reservation_id, payment.order_id)
 
         event = BaseEvent(
             event_type="PaymentCompleted",
@@ -36,6 +37,7 @@ class PaymentService:
                 payment_id=payment.id,
                 reservation_id=payment.reservation_id,
                 order_id=payment.order_id,
+                branch_id=branch_id,
                 amount=payment.amount,
                 method=payment.method,
                 status=payment.status,
@@ -56,6 +58,7 @@ class PaymentService:
         payment = await self.payment_repo.update(
             payment, {"status": "REFUNDED", "refund_reason": payload.reason}
         )
+        branch_id = await self.payment_repo.resolve_branch_id(payment.reservation_id, payment.order_id)
 
         event = BaseEvent(
             event_type="RefundIssued",
@@ -63,6 +66,7 @@ class PaymentService:
             aggregate_id=str(payment.id),
             payload=RefundIssued(
                 payment_id=payment.id,
+                branch_id=branch_id,
                 amount=payment.amount,
                 reason=payment.refund_reason,
                 status=payment.status,

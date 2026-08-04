@@ -34,6 +34,7 @@ class ReservationCreated(BaseModel):
     reservation_id: uuid.UUID
     room_id: uuid.UUID
     guest_id: uuid.UUID
+    branch_id: uuid.UUID | None = None
     check_in_date: date
     check_out_date: date
     status: str
@@ -42,29 +43,35 @@ class ReservationCreated(BaseModel):
 
 class ReservationConfirmed(BaseModel):
     reservation_id: uuid.UUID
+    branch_id: uuid.UUID | None = None
     status: str
 
 
 class ReservationCancelled(BaseModel):
     reservation_id: uuid.UUID
+    branch_id: uuid.UUID | None = None
     status: str
+    total_amount: Decimal | None = None
     cancellation_reason: str | None = None
 
 
 class ReservationCheckedIn(BaseModel):
     reservation_id: uuid.UUID
     room_id: uuid.UUID
+    branch_id: uuid.UUID | None = None
     status: str
 
 
 class ReservationCheckedOut(BaseModel):
     reservation_id: uuid.UUID
     room_id: uuid.UUID
+    branch_id: uuid.UUID | None = None
     status: str
 
 
 class ReservationUpdated(BaseModel):
     reservation_id: uuid.UUID
+    branch_id: uuid.UUID | None = None
     status: str
     changes: dict[str, Any] = Field(default_factory=dict)
 
@@ -80,18 +87,21 @@ class OrderCreated(BaseModel):
 
 class OrderUpdated(BaseModel):
     order_id: uuid.UUID
+    branch_id: uuid.UUID | None = None
     status: str
     changes: dict[str, Any] = Field(default_factory=dict)
 
 
 class OrderCompleted(BaseModel):
     order_id: uuid.UUID
+    branch_id: uuid.UUID | None = None
     status: str
     total_amount: Decimal
 
 
 class OrderCancelled(BaseModel):
     order_id: uuid.UUID
+    branch_id: uuid.UUID | None = None
     status: str
 
 
@@ -101,6 +111,7 @@ class PaymentCompleted(BaseModel):
     payment_id: uuid.UUID
     reservation_id: uuid.UUID | None = None
     order_id: uuid.UUID | None = None
+    branch_id: uuid.UUID | None = None
     amount: Decimal
     method: str
     status: str
@@ -108,6 +119,7 @@ class PaymentCompleted(BaseModel):
 
 class RefundIssued(BaseModel):
     payment_id: uuid.UUID
+    branch_id: uuid.UUID | None = None
     amount: Decimal
     reason: str | None = None
     status: str

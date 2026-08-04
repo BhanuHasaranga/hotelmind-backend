@@ -92,3 +92,13 @@ class ReservationRepository(BaseRepository[Reservation]):
             .where(Reservation.id == reservation_id)
         )
         return result.scalar_one_or_none()
+
+    async def get_branch_id(self, reservation_id: uuid.UUID) -> uuid.UUID | None:
+        """Resolves the owning branch via room -> floor -> branch."""
+        result = await self.db.execute(
+            select(Floor.branch_id)
+            .join(Room, Room.floor_id == Floor.id)
+            .join(Reservation, Reservation.room_id == Room.id)
+            .where(Reservation.id == reservation_id)
+        )
+        return result.scalar_one_or_none()

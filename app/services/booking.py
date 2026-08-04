@@ -104,6 +104,7 @@ class BookingService:
             )
         new_res = await self.reservation_repo.create(payload.model_dump())
         res = await self.reservation_repo.get_with_guest(new_res.id)
+        branch_id = await self.reservation_repo.get_branch_id(res.id)
 
         event = BaseEvent(
             event_type="ReservationCreated",
@@ -113,6 +114,7 @@ class BookingService:
                 reservation_id=res.id,
                 room_id=res.room_id,
                 guest_id=res.guest_id,
+                branch_id=branch_id,
                 check_in_date=res.check_in_date,
                 check_out_date=res.check_out_date,
                 status=res.status,
@@ -137,6 +139,7 @@ class BookingService:
                 raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Date conflict with existing reservation")
         await self.reservation_repo.update(res, data)
         updated = await self.reservation_repo.get_with_guest(reservation_id)
+        branch_id = await self.reservation_repo.get_branch_id(reservation_id)
 
         event = BaseEvent(
             event_type="ReservationUpdated",
@@ -144,6 +147,7 @@ class BookingService:
             aggregate_id=str(reservation_id),
             payload=ReservationUpdated(
                 reservation_id=reservation_id,
+                branch_id=branch_id,
                 status=updated.status,
                 changes={k: v for k, v in data.items()},
             ).model_dump(mode="json"),
@@ -167,12 +171,15 @@ class BookingService:
         res = await self._transition(reservation_id, "CONFIRMED")
         await self.reservation_repo.update(res, {"status": "CONFIRMED"})
         updated = await self.reservation_repo.get_with_guest(reservation_id)
+        branch_id = await self.reservation_repo.get_branch_id(reservation_id)
 
         event = BaseEvent(
             event_type="ReservationConfirmed",
             aggregate_type="Reservation",
             aggregate_id=str(reservation_id),
-            payload=ReservationConfirmed(reservation_id=reservation_id, status="CONFIRMED").model_dump(mode="json"),
+            payload=ReservationConfirmed(
+                reservation_id=reservation_id, branch_id=branch_id, status="CONFIRMED"
+            ).model_dump(mode="json"),
         )
         await self.publisher.publish(event, BOOKING_EVENTS)
         return updated  # type: ignore[return-value]
@@ -184,13 +191,14 @@ class BookingService:
         if room:
             await self.room_repo.update(room, {"status": "OCCUPIED"})
         updated = await self.reservation_repo.get_with_guest(reservation_id)
+        branch_id = await self.reservation_repo.get_branch_id(reservation_id)
 
         event = BaseEvent(
             event_type="ReservationCheckedIn",
             aggregate_type="Reservation",
             aggregate_id=str(reservation_id),
             payload=ReservationCheckedIn(
-                reservation_id=reservation_id, room_id=res.room_id, status="CHECKED_IN"
+                reservation_id=reservation_id, room_id=res.room_id, branch_id=branch_id, status="CHECKED_IN"
             ).model_dump(mode="json"),
         )
         await self.publisher.publish(event, BOOKING_EVENTS)
@@ -203,13 +211,14 @@ class BookingService:
         if room:
             await self.room_repo.update(room, {"status": "AVAILABLE"})
         updated = await self.reservation_repo.get_with_guest(reservation_id)
+        branch_id = await self.reservation_repo.get_branch_id(reservation_id)
 
         event = BaseEvent(
             event_type="ReservationCheckedOut",
             aggregate_type="Reservation",
             aggregate_id=str(reservation_id),
             payload=ReservationCheckedOut(
-                reservation_id=reservation_id, room_id=res.room_id, status="CHECKED_OUT"
+                reservation_id=reservation_id, room_id=res.room_id, branch_id=branch_id, status="CHECKED_OUT"
             ).model_dump(mode="json"),
         )
         await self.publisher.publish(event, BOOKING_EVENTS)
@@ -223,13 +232,18 @@ class BookingService:
             "cancellation_reason": payload.reason,
         })
         updated = await self.reservation_repo.get_with_guest(reservation_id)
+        branch_id = await self.reservation_repo.get_branch_id(reservation_id)
 
         event = BaseEvent(
             event_type="ReservationCancelled",
             aggregate_type="Reservation",
             aggregate_id=str(reservation_id),
             payload=ReservationCancelled(
-                reservation_id=reservation_id, status="CANCELLED", cancellation_reason=payload.reason
+                reservation_id=reservation_id,
+                branch_id=branch_id,
+                status="CANCELLED",
+                total_amount=res.total_amount,
+                cancellation_reason=payload.reason,
             ).model_dump(mode="json"),
         )
         await self.publisher.publish(event, BOOKING_EVENTS)
