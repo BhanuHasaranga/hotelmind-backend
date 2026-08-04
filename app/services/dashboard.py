@@ -3,22 +3,37 @@ from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Sequence
 
+from redis.asyncio import Redis
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.booking import Reservation
 from app.models.hotel import Floor, Room
 from app.models.restaurant import RestaurantOrder
+from app.redis_cache import dashboard_cache
 from app.schemas.dashboard import DailyOccupancy, DailyRevenue, DashboardSummary
 
 
 class DashboardService:
-    """Aggregation queries — uses raw SQL expressions for performance."""
+    """Aggregation queries — reads from the Redis read-model first, falling
+    back to Postgres (with backfill) on a cache miss. Raw SQL expressions
+    remain for the fallback/backfill path.
+    """
 
-    def __init__(self, db: AsyncSession) -> None:
+    def __init__(self, db: AsyncSession, redis: Redis) -> None:
         self.db = db
+        self.redis = redis
 
     async def get_summary(self, branch_id: uuid.UUID) -> DashboardSummary:
+        cached = await dashboard_cache.get_summary(self.redis, str(branch_id))
+        if cached is not None:
+            return DashboardSummary(**cached)
+
+        summary = await self._get_summary_from_db(branch_id)
+        await dashboard_cache.set_summary(self.redis, str(branch_id), summary.model_dump(mode="json"))
+        return summary
+
+    async def _get_summary_from_db(self, branch_id: uuid.UUID) -> DashboardSummary:
         today = date.today()
         month_start = today.replace(day=1)
 

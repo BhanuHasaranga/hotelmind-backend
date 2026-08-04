@@ -2,8 +2,10 @@ import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.dependencies import get_redis
 from app.db.session import get_db
 from app.schemas.dashboard import DailyOccupancy, DailyRevenue, DashboardSummary
 from app.services.dashboard import DashboardService
@@ -11,8 +13,11 @@ from app.services.dashboard import DashboardService
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 
-def get_dashboard_service(db: AsyncSession = Depends(get_db)) -> DashboardService:
-    return DashboardService(db)
+def get_dashboard_service(
+    db: AsyncSession = Depends(get_db),
+    redis: Redis = Depends(get_redis),
+) -> DashboardService:
+    return DashboardService(db, redis)
 
 
 ServiceDep = Annotated[DashboardService, Depends(get_dashboard_service)]
