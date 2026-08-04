@@ -15,8 +15,8 @@ def ai_insight_key(insight_id: str) -> str:
     return f"dashboard:ai_insight:{insight_id}"
 
 
-def event_seen_key(event_id: str) -> str:
-    return f"event:seen:{event_id}"
+def event_seen_key(consumer_name: str, event_id: str) -> str:
+    return f"event:seen:{consumer_name}:{event_id}"
 
 
 def summary_key(branch_id: str) -> str:

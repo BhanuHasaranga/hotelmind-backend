@@ -79,6 +79,11 @@ async def publish_dashboard_update(redis: Redis, payload: dict[str, Any]) -> Non
     await redis.publish(keys.DASHBOARD_UPDATES_CHANNEL, json.dumps(payload, default=str))
 
 
-async def mark_event_seen(redis: Redis, event_id: str, ttl_seconds: int = 86400) -> bool:
-    """Returns True if this is the first time seeing event_id (SETNX semantics)."""
-    return bool(await redis.set(keys.event_seen_key(event_id), "1", nx=True, ex=ttl_seconds))
+async def mark_event_seen(redis: Redis, consumer_name: str, event_id: str, ttl_seconds: int = 86400) -> bool:
+    """Returns True if this is the first time this consumer has seen event_id (SETNX semantics).
+
+    Idempotency is scoped per-consumer: the same event_id is legitimately processed once by
+    each independent consumer group (booking-consumer, audit-consumer, etc.), so the dedupe
+    key must not be shared globally across consumers.
+    """
+    return bool(await redis.set(keys.event_seen_key(consumer_name, event_id), "1", nx=True, ex=ttl_seconds))

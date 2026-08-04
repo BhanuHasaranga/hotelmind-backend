@@ -102,7 +102,7 @@ class BaseConsumer(ABC):
         )
         start = time.monotonic()
         try:
-            first_time = await mark_event_seen(self._redis, event_id)
+            first_time = await mark_event_seen(self._redis, self.name, event_id)
             if not first_time:
                 logger.info("Skipping duplicate event", extra={"event_id": event_id})
                 return
