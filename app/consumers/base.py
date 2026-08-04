@@ -110,7 +110,7 @@ class BaseConsumer(ABC):
         )
         start = time.monotonic()
         try:
-            first_time = await mark_event_seen(self._redis, self.name, event_id)
+            first_time = await self._mark_event_seen_with_retry(event_id)
             if not first_time:
                 logger.info("Skipping duplicate event", extra={"event_id": event_id})
                 return
@@ -121,6 +121,37 @@ class BaseConsumer(ABC):
             elapsed = time.monotonic() - start
             consumer_processing_seconds.labels(topic=record.topic, consumer=self.name).observe(elapsed)
             reset_context(tokens)
+
+    async def _mark_event_seen_with_retry(self, event_id: str) -> bool:
+        """Redis is a hard dependency for idempotency, but a transient outage
+        must not kill the consumer task the way an unhandled exception would
+        (Kafka offsets are auto-committed, so a dead task means silent data
+        loss for every message after it). Retries with the same backoff
+        policy as handler failures, then gives up and treats the message as
+        not-yet-seen so it's still processed (at-least-once, not dropped).
+        """
+        attempt = 0
+        while True:
+            try:
+                return await mark_event_seen(self._redis, self.name, event_id)
+            except Exception:
+                attempt += 1
+                if attempt > settings.KAFKA_MAX_RETRIES:
+                    logger.exception(
+                        "Redis unavailable for idempotency check after retries; "
+                        "processing without dedup guarantee",
+                        extra={"consumer": self.name, "attempt": attempt},
+                    )
+                    return True
+                backoff = min(
+                    settings.KAFKA_RETRY_BACKOFF_BASE_SECONDS * (2 ** (attempt - 1)),
+                    settings.KAFKA_RETRY_BACKOFF_MAX_SECONDS,
+                )
+                logger.warning(
+                    "Redis error during idempotency check, retrying",
+                    extra={"consumer": self.name, "attempt": attempt, "backoff": backoff},
+                )
+                await asyncio.sleep(backoff)
 
     async def _process_with_retry(self, event: dict) -> None:
         attempt = 0
