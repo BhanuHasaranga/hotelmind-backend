@@ -53,14 +53,15 @@ async def _kafka_peek(topic: str, timeout: float = 8.0) -> dict | None:
         await consumer.stop()
 
 
-async def _ws_listen(duration: float = 6.0) -> list[dict]:
+async def _ws_listen(duration: float = 6.0, token: str | None = None) -> list[dict]:
     """Collects every message received during the window — a per-message
     receive timeout must NOT abort the whole listen loop, only end it once
     the overall deadline has passed (a gap between broadcasts is normal)."""
     import websockets
 
+    ws_url = f"{WS_URL}?token={token}" if token else WS_URL
     messages: list[dict] = []
-    async with websockets.connect(WS_URL) as ws:
+    async with websockets.connect(ws_url) as ws:
         deadline = asyncio.get_event_loop().time() + duration
         while True:
             remaining = deadline - asyncio.get_event_loop().time()
@@ -78,7 +79,7 @@ async def _ws_listen(duration: float = 6.0) -> list[dict]:
 async def test_flow1_create_reservation_end_to_end(api_client, seeded_branch):
     hotel, branch, room, guest = seeded_branch
 
-    ws_task = asyncio.create_task(_ws_listen(duration=8.0))
+    ws_task = asyncio.create_task(_ws_listen(duration=8.0, token=api_client.auth_token))
     await asyncio.sleep(0.3)
 
     check_in = date.today() + timedelta(days=random.randint(200, 500))
@@ -148,7 +149,7 @@ async def test_flow2_cancel_reservation_updates_revenue_and_broadcasts(api_clien
         revenue_before = await redis.get(f"dashboard:revenue:{branch['id']}")
         revenue_before_val = float(revenue_before) if revenue_before is not None else 0.0
 
-        ws_task = asyncio.create_task(_ws_listen(duration=8.0))
+        ws_task = asyncio.create_task(_ws_listen(duration=8.0, token=api_client.auth_token))
         await asyncio.sleep(1.0)
 
         cancel_resp = await api_client.patch(
@@ -201,7 +202,7 @@ async def test_flow3_restaurant_order_updates_sales_cache(api_client, seeded_bra
     )
     assert item_resp.status_code == 200
 
-    ws_task = asyncio.create_task(_ws_listen(duration=6.0))
+    ws_task = asyncio.create_task(_ws_listen(duration=6.0, token=api_client.auth_token))
     await asyncio.sleep(0.3)
 
     close_resp = await api_client.patch(f"/api/v1/restaurant/orders/{order['id']}/close")
@@ -243,7 +244,7 @@ async def test_flow4_review_triggers_sentiment_calculation(api_client, seeded_br
 
 
 @pytest.mark.asyncio
-async def test_flow5_ml_forecast_event_reaches_redis_and_websocket(seeded_branch):
+async def test_flow5_ml_forecast_event_reaches_redis_and_websocket(api_client, seeded_branch):
     from aiokafka import AIOKafkaProducer
 
     from app.events.schemas import BaseEvent, OccupancyForecastReady
@@ -267,7 +268,7 @@ async def test_flow5_ml_forecast_event_reaches_redis_and_websocket(seeded_branch
             ).model_dump(mode="json"),
         )
 
-        ws_task = asyncio.create_task(_ws_listen(duration=6.0))
+        ws_task = asyncio.create_task(_ws_listen(duration=6.0, token=api_client.auth_token))
         await asyncio.sleep(0.3)
 
         await producer.send_and_wait(ML_PREDICTIONS, value=event, key=event.aggregate_id)

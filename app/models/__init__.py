@@ -4,6 +4,9 @@ from app.models.restaurant import FoodCategory, MenuItem, RestaurantTable, Resta
 from app.models.staff import Department, Employee, Schedule, Attendance
 from app.models.payment import Payment
 from app.models.review import Review
+from app.models.user import User
+from app.models.recommendation import Recommendation
+from app.models.guardrail import PricingGuardrail, StaffingGuardrail, MlRoomTypeMapping
 
 __all__ = [
     "Hotel", "Branch", "Floor", "RoomType", "Room", "Amenity",
@@ -11,4 +14,6 @@ __all__ = [
     "FoodCategory", "MenuItem", "RestaurantTable", "RestaurantOrder", "OrderItem",
     "Department", "Employee", "Schedule", "Attendance",
     "Payment", "Review",
+    "User",
+    "Recommendation", "PricingGuardrail", "StaffingGuardrail", "MlRoomTypeMapping",
 ]

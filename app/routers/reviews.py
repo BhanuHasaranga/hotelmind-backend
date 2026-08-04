@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.auth_dependencies import get_current_user
 from app.core.dependencies import get_event_publisher
 from app.db.session import get_db
 from app.producers.base import EventPublisher
@@ -11,7 +12,9 @@ from app.repositories.review import ReviewRepository
 from app.schemas.review import ReviewCreate, ReviewResponse
 from app.services.review import ReviewService
 
-router = APIRouter(prefix="/reviews", tags=["Reviews"])
+# No extra role restriction — any authenticated role (especially GUEST_EXPERIENCE_MANAGER)
+# plausibly creates/reads reviews. Coarse for this pass; TODO revisit later.
+router = APIRouter(prefix="/reviews", tags=["Reviews"], dependencies=[Depends(get_current_user)])
 
 
 def get_review_service(

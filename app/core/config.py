@@ -41,5 +41,14 @@ class Settings(BaseSettings):
     # Event source identifier stamped on every published event
     EVENT_SOURCE: str = "hotelmind-backend"
 
+    # JWT auth
+    JWT_SECRET: str = "dev-jwt-secret-change-in-production"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_EXPIRES_MINUTES: int = 480
+
+    # ML service bridge (Phase 3)
+    ML_BASE_URL: str = "http://localhost:8110"
+    ML_REQUEST_TIMEOUT_SECONDS: float = 15.0
+
 
 settings = Settings()

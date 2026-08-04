@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.auth_dependencies import get_current_user
 from app.core.dependencies import get_event_publisher
 from app.db.session import get_db
 from app.producers.base import EventPublisher
@@ -20,7 +21,9 @@ from app.schemas.booking import (
 )
 from app.services.booking import BookingService
 
-router = APIRouter(prefix="/bookings", tags=["Bookings"])
+# TODO: coarse gate — any authenticated role can create/cancel reservations.
+# Revisit with finer role scoping in a later phase.
+router = APIRouter(prefix="/bookings", tags=["Bookings"], dependencies=[Depends(get_current_user)])
 
 
 def get_booking_service(

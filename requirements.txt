@@ -10,3 +10,9 @@ python-dotenv==1.0.1
 httpx==0.28.1
 aiokafka==0.11.0
 prometheus-client==0.21.1
+python-jose[cryptography]==3.3.0
+# NOTE: do not add passlib here. passlib's bcrypt backend probes the removed
+# `bcrypt.__about__` attribute and crashes on bcrypt>=4.0 (see app/core/security.py,
+# which calls the bcrypt package directly instead).
+bcrypt==4.2.0
+python-multipart==0.0.32

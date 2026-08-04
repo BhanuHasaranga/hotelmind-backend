@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.auth_dependencies import get_current_user, require_roles
 from app.db.session import get_db
 from app.repositories.hotel import (
     BranchRepository,
@@ -30,10 +31,15 @@ from app.schemas.hotel import (
 )
 from app.services.hotel import HotelService
 
-router = APIRouter(prefix="/hotels", tags=["Hotels"])
+router = APIRouter(prefix="/hotels", tags=["Hotels"], dependencies=[Depends(get_current_user)])
 
 # Separate router for /hotels/branches/... paths to avoid collision with /{hotel_id}
-branches_router = APIRouter(prefix="/hotels/branches", tags=["Hotels"])
+branches_router = APIRouter(
+    prefix="/hotels/branches", tags=["Hotels"], dependencies=[Depends(get_current_user)]
+)
+
+# Mutating hotel/branch/room-type/floor/room operations are restricted to OWNER and OPS_MANAGER.
+manage_roles = Depends(require_roles("OWNER", "OPS_MANAGER"))
 
 
 def get_hotel_service(db: AsyncSession = Depends(get_db)) -> HotelService:
@@ -54,7 +60,7 @@ async def list_hotels(svc: ServiceDep, skip: int = 0, limit: int = 100):
     return await svc.list_hotels(skip, limit)
 
 
-@router.post("/", response_model=HotelResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=HotelResponse, status_code=status.HTTP_201_CREATED, dependencies=[manage_roles])
 async def create_hotel(payload: HotelCreate, svc: ServiceDep):
     return await svc.create_hotel(payload)
 
@@ -64,12 +70,12 @@ async def get_hotel(hotel_id: uuid.UUID, svc: ServiceDep):
     return await svc.get_hotel(hotel_id)
 
 
-@router.put("/{hotel_id}", response_model=HotelResponse)
+@router.put("/{hotel_id}", response_model=HotelResponse, dependencies=[manage_roles])
 async def update_hotel(hotel_id: uuid.UUID, payload: HotelUpdate, svc: ServiceDep):
     return await svc.update_hotel(hotel_id, payload)
 
 
-@router.delete("/{hotel_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{hotel_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[manage_roles])
 async def deactivate_hotel(hotel_id: uuid.UUID, svc: ServiceDep):
     await svc.deactivate_hotel(hotel_id)
 
@@ -81,13 +87,18 @@ async def list_branches(hotel_id: uuid.UUID, svc: ServiceDep):
     return await svc.list_branches(hotel_id)
 
 
-@router.post("/{hotel_id}/branches", response_model=BranchResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{hotel_id}/branches",
+    response_model=BranchResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[manage_roles],
+)
 async def create_branch(hotel_id: uuid.UUID, payload: BranchCreate, svc: ServiceDep):
     payload.hotel_id = hotel_id
     return await svc.create_branch(payload)
 
 
-@branches_router.put("/{branch_id}", response_model=BranchResponse)
+@branches_router.put("/{branch_id}", response_model=BranchResponse, dependencies=[manage_roles])
 async def update_branch(branch_id: uuid.UUID, payload: BranchUpdate, svc: ServiceDep):
     return await svc.update_branch(branch_id, payload)
 
@@ -99,19 +110,21 @@ async def list_room_types(branch_id: uuid.UUID, svc: ServiceDep):
     return await svc.list_room_types(branch_id)
 
 
-@router.post("/room-types", response_model=RoomTypeResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/room-types", response_model=RoomTypeResponse, status_code=status.HTTP_201_CREATED, dependencies=[manage_roles]
+)
 async def create_room_type(payload: RoomTypeCreate, svc: ServiceDep):
     return await svc.create_room_type(payload)
 
 
-@router.put("/room-types/{room_type_id}", response_model=RoomTypeResponse)
+@router.put("/room-types/{room_type_id}", response_model=RoomTypeResponse, dependencies=[manage_roles])
 async def update_room_type(room_type_id: uuid.UUID, payload: RoomTypeUpdate, svc: ServiceDep):
     return await svc.update_room_type(room_type_id, payload)
 
 
 # ── Floors ────────────────────────────────────────────────────────────────────
 
-@router.post("/floors", response_model=FloorResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/floors", response_model=FloorResponse, status_code=status.HTTP_201_CREATED, dependencies=[manage_roles])
 async def create_floor(payload: FloorCreate, svc: ServiceDep):
     return await svc.create_floor(payload)
 
@@ -127,11 +140,11 @@ async def list_rooms(
     return await svc.list_rooms(branch_id, status=room_status)
 
 
-@router.post("/rooms", response_model=RoomResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/rooms", response_model=RoomResponse, status_code=status.HTTP_201_CREATED, dependencies=[manage_roles])
 async def create_room(payload: RoomCreate, svc: ServiceDep):
     return await svc.create_room(payload)
 
 
-@router.patch("/rooms/{room_id}/status", response_model=RoomResponse)
+@router.patch("/rooms/{room_id}/status", response_model=RoomResponse, dependencies=[manage_roles])
 async def update_room_status(room_id: uuid.UUID, payload: RoomStatusUpdate, svc: ServiceDep):
     return await svc.update_room_status(room_id, payload)

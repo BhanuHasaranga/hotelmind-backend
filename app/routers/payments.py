@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.auth_dependencies import get_current_user, require_roles
 from app.core.dependencies import get_event_publisher
 from app.db.session import get_db
 from app.producers.base import EventPublisher
@@ -11,7 +12,10 @@ from app.repositories.payment import PaymentRepository
 from app.schemas.payment import PaymentCreate, PaymentResponse, RefundRequest
 from app.services.payment import PaymentService
 
-router = APIRouter(prefix="/payments", tags=["Payments"])
+router = APIRouter(prefix="/payments", tags=["Payments"], dependencies=[Depends(get_current_user)])
+
+# Refunds are money-sensitive — restricted to OWNER and OPS_MANAGER.
+manage_roles = Depends(require_roles("OWNER", "OPS_MANAGER"))
 
 
 def get_payment_service(
@@ -39,6 +43,6 @@ async def get_payment(payment_id: uuid.UUID, svc: ServiceDep):
     return await svc.get_payment(payment_id)
 
 
-@router.patch("/{payment_id}/refund", response_model=PaymentResponse)
+@router.patch("/{payment_id}/refund", response_model=PaymentResponse, dependencies=[manage_roles])
 async def refund_payment(payment_id: uuid.UUID, payload: RefundRequest, svc: ServiceDep):
     return await svc.refund_payment(payment_id, payload)

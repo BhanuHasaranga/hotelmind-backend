@@ -9,6 +9,7 @@ import app.models  # noqa: F401 — ensures all SQLAlchemy models register befor
 from app.core.config import settings
 from app.logging.structured import configure_logging
 from app.producers.kafka_producer import KafkaEventPublisher
+from app.routers import auth as auth_router
 from app.routers import health as health_router
 from app.routers import hotels as hotels_router
 from app.routers import bookings as bookings_router
@@ -17,6 +18,8 @@ from app.routers import staff as staff_router
 from app.routers import dashboard as dashboard_router
 from app.routers import payments as payments_router
 from app.routers import reviews as reviews_router
+from app.routers import ml as ml_router
+from app.routers import recommendations as recommendations_router
 from app.metrics import router as metrics_router
 from app.websocket import router as websocket_router
 from app.websocket.pubsub_bridge import redis_pubsub_listener
@@ -62,6 +65,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(health_router.router)
+    app.include_router(auth_router.router, prefix="/api/v1")
     app.include_router(hotels_router.router, prefix="/api/v1")
     app.include_router(hotels_router.branches_router, prefix="/api/v1")
     app.include_router(bookings_router.router, prefix="/api/v1")
@@ -70,6 +74,8 @@ def create_app() -> FastAPI:
     app.include_router(dashboard_router.router, prefix="/api/v1")
     app.include_router(payments_router.router, prefix="/api/v1")
     app.include_router(reviews_router.router, prefix="/api/v1")
+    app.include_router(ml_router.router, prefix="/api/v1")
+    app.include_router(recommendations_router.router, prefix="/api/v1")
     app.include_router(metrics_router.router)
     app.include_router(websocket_router.router)
 

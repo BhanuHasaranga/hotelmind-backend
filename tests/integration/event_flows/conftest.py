@@ -33,9 +33,23 @@ requires_live_stack = pytest.mark.skipif(
 )
 
 
+# Demo OWNER account seeded by alembic/versions/c3d4e5f6a7b8_seed_demo_users.py.
+# Password is the public, non-secret demo credential documented there.
+DEMO_OWNER_EMAIL = "owner@hotelmind.demo"
+DEMO_OWNER_PASSWORD = "demo1234"
+
+
 @pytest_asyncio.fixture
 async def api_client():
     async with httpx.AsyncClient(base_url=BASE_URL, timeout=15.0) as client:
+        login_resp = await client.post(
+            "/api/v1/auth/login",
+            data={"username": DEMO_OWNER_EMAIL, "password": DEMO_OWNER_PASSWORD},
+        )
+        login_resp.raise_for_status()
+        token = login_resp.json()["access_token"]
+        client.headers["Authorization"] = f"Bearer {token}"
+        client.auth_token = token  # exposed for tests that need it directly (e.g. WS auth)
         yield client
 
 

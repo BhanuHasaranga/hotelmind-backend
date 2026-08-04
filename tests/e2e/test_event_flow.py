@@ -6,6 +6,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from app.core.security import create_access_token
 from app.events.schemas import BaseEvent, ReservationCreated
 from app.events.topics import BOOKING_EVENTS
 from app.handlers.booking_handlers import handle_booking_event
@@ -84,7 +85,9 @@ def test_websocket_receives_dashboard_update_end_to_end():
     app.include_router(websocket_router)
     client = TestClient(app)
 
-    with client.websocket_connect("/ws/dashboard") as websocket:
+    token = create_access_token(subject=uuid.uuid4(), role="OWNER", branch_id=None)
+
+    with client.websocket_connect(f"/ws/dashboard?token={token}") as websocket:
         def _broadcast():
             asyncio.run(manager.broadcast({"type": "booking", "event_type": "ReservationCreated"}))
 
