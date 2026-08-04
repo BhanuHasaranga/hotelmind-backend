@@ -53,7 +53,6 @@ class BaseConsumer(ABC):
             client_id=f"{settings.KAFKA_CLIENT_ID}-{self.name}",
             auto_offset_reset=settings.KAFKA_AUTO_OFFSET_RESET,
             enable_auto_commit=True,
-            value_deserializer=lambda v: json.loads(v.decode("utf-8")),
         )
         await self._consumer.start()
 
@@ -88,7 +87,16 @@ class BaseConsumer(ABC):
             await self.stop()
 
     async def _process_record(self, record: ConsumerRecord) -> None:
-        event = record.value
+        try:
+            event = json.loads(record.value.decode("utf-8"))
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            logger.exception(
+                "Poison message: failed to decode, publishing raw bytes to DLQ",
+                extra={"consumer": self.name, "topic": record.topic},
+            )
+            await self._publish_raw_to_dlq(record.topic, record.value)
+            return
+
         event_id = event.get("event_id", str(uuid.uuid4()))
         trace_id = event.get("trace_id")
         correlation_id = event.get("correlation_id")
@@ -146,6 +154,12 @@ class BaseConsumer(ABC):
 
     async def _publish_to_dlq(self, event: dict) -> None:
         topic = self._current_topic(event)
-        dlq_topic = f"{topic}{settings.KAFKA_DLQ_SUFFIX}"
         payload = json.dumps(event, default=str).encode("utf-8")
+        await self._send_to_dlq(topic, payload)
+
+    async def _publish_raw_to_dlq(self, topic: str, raw_value: bytes) -> None:
+        await self._send_to_dlq(topic, raw_value)
+
+    async def _send_to_dlq(self, topic: str, payload: bytes) -> None:
+        dlq_topic = f"{topic}{settings.KAFKA_DLQ_SUFFIX}"
         await self._dlq_producer.send_and_wait(dlq_topic, value=payload)
