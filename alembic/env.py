@@ -19,6 +19,8 @@ import app.models.hotel  # noqa: E402, F401
 import app.models.booking  # noqa: E402, F401
 import app.models.restaurant  # noqa: E402, F401
 import app.models.staff  # noqa: E402, F401
+import app.models.payment  # noqa: E402, F401
+import app.models.review  # noqa: E402, F401
 
 target_metadata = Base.metadata
 

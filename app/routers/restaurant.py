@@ -4,7 +4,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.dependencies import get_event_publisher
 from app.db.session import get_db
+from app.producers.base import EventPublisher
 from app.repositories.restaurant import (
     FoodCategoryRepository,
     MenuItemRepository,
@@ -30,13 +32,17 @@ from app.services.restaurant import RestaurantService
 router = APIRouter(prefix="/restaurant", tags=["Restaurant"])
 
 
-def get_restaurant_service(db: AsyncSession = Depends(get_db)) -> RestaurantService:
+def get_restaurant_service(
+    db: AsyncSession = Depends(get_db),
+    publisher: EventPublisher = Depends(get_event_publisher),
+) -> RestaurantService:
     return RestaurantService(
         category_repo=FoodCategoryRepository(db),
         menu_repo=MenuItemRepository(db),
         table_repo=RestaurantTableRepository(db),
         order_repo=OrderRepository(db),
         order_item_repo=OrderItemRepository(db),
+        publisher=publisher,
     )
 
 

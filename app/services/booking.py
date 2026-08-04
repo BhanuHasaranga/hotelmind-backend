@@ -4,8 +4,19 @@ from typing import Sequence
 
 from fastapi import HTTPException, status
 
+from app.events.schemas import (
+    BaseEvent,
+    ReservationCancelled,
+    ReservationCheckedIn,
+    ReservationCheckedOut,
+    ReservationConfirmed,
+    ReservationCreated,
+    ReservationUpdated,
+)
+from app.events.topics import BOOKING_EVENTS
 from app.models.booking import Guest, Reservation
 from app.models.hotel import Room
+from app.producers.base import EventPublisher
 from app.repositories.booking import GuestRepository, ReservationRepository
 from app.repositories.hotel import RoomRepository
 from app.schemas.booking import (
@@ -33,10 +44,12 @@ class BookingService:
         reservation_repo: ReservationRepository,
         guest_repo: GuestRepository,
         room_repo: RoomRepository,
+        publisher: EventPublisher,
     ) -> None:
         self.reservation_repo = reservation_repo
         self.guest_repo = guest_repo
         self.room_repo = room_repo
+        self.publisher = publisher
 
     # ── Guests ────────────────────────────────────────────────────────────────
 
@@ -90,7 +103,24 @@ class BookingService:
                 detail="Room is already booked for the requested dates",
             )
         new_res = await self.reservation_repo.create(payload.model_dump())
-        return await self.reservation_repo.get_with_guest(new_res.id)  # type: ignore[return-value]
+        res = await self.reservation_repo.get_with_guest(new_res.id)
+
+        event = BaseEvent(
+            event_type="ReservationCreated",
+            aggregate_type="Reservation",
+            aggregate_id=str(res.id),
+            payload=ReservationCreated(
+                reservation_id=res.id,
+                room_id=res.room_id,
+                guest_id=res.guest_id,
+                check_in_date=res.check_in_date,
+                check_out_date=res.check_out_date,
+                status=res.status,
+                total_amount=res.total_amount,
+            ).model_dump(mode="json"),
+        )
+        await self.publisher.publish(event, BOOKING_EVENTS)
+        return res  # type: ignore[return-value]
 
     async def update_reservation(self, reservation_id: uuid.UUID, payload: ReservationUpdate) -> Reservation:
         res = await self.reservation_repo.get(reservation_id)
@@ -106,7 +136,20 @@ class BookingService:
             if conflict:
                 raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Date conflict with existing reservation")
         await self.reservation_repo.update(res, data)
-        return await self.reservation_repo.get_with_guest(reservation_id)  # type: ignore[return-value]
+        updated = await self.reservation_repo.get_with_guest(reservation_id)
+
+        event = BaseEvent(
+            event_type="ReservationUpdated",
+            aggregate_type="Reservation",
+            aggregate_id=str(reservation_id),
+            payload=ReservationUpdated(
+                reservation_id=reservation_id,
+                status=updated.status,
+                changes={k: v for k, v in data.items()},
+            ).model_dump(mode="json"),
+        )
+        await self.publisher.publish(event, BOOKING_EVENTS)
+        return updated  # type: ignore[return-value]
 
     async def _transition(self, reservation_id: uuid.UUID, target_status: str) -> Reservation:
         res = await self.reservation_repo.get(reservation_id)
@@ -123,7 +166,16 @@ class BookingService:
     async def confirm(self, reservation_id: uuid.UUID) -> Reservation:
         res = await self._transition(reservation_id, "CONFIRMED")
         await self.reservation_repo.update(res, {"status": "CONFIRMED"})
-        return await self.reservation_repo.get_with_guest(reservation_id)  # type: ignore[return-value]
+        updated = await self.reservation_repo.get_with_guest(reservation_id)
+
+        event = BaseEvent(
+            event_type="ReservationConfirmed",
+            aggregate_type="Reservation",
+            aggregate_id=str(reservation_id),
+            payload=ReservationConfirmed(reservation_id=reservation_id, status="CONFIRMED").model_dump(mode="json"),
+        )
+        await self.publisher.publish(event, BOOKING_EVENTS)
+        return updated  # type: ignore[return-value]
 
     async def check_in(self, reservation_id: uuid.UUID) -> Reservation:
         res = await self._transition(reservation_id, "CHECKED_IN")
@@ -131,7 +183,18 @@ class BookingService:
         room = await self.room_repo.get(res.room_id)
         if room:
             await self.room_repo.update(room, {"status": "OCCUPIED"})
-        return await self.reservation_repo.get_with_guest(reservation_id)  # type: ignore[return-value]
+        updated = await self.reservation_repo.get_with_guest(reservation_id)
+
+        event = BaseEvent(
+            event_type="ReservationCheckedIn",
+            aggregate_type="Reservation",
+            aggregate_id=str(reservation_id),
+            payload=ReservationCheckedIn(
+                reservation_id=reservation_id, room_id=res.room_id, status="CHECKED_IN"
+            ).model_dump(mode="json"),
+        )
+        await self.publisher.publish(event, BOOKING_EVENTS)
+        return updated  # type: ignore[return-value]
 
     async def check_out(self, reservation_id: uuid.UUID) -> Reservation:
         res = await self._transition(reservation_id, "CHECKED_OUT")
@@ -139,7 +202,18 @@ class BookingService:
         room = await self.room_repo.get(res.room_id)
         if room:
             await self.room_repo.update(room, {"status": "AVAILABLE"})
-        return await self.reservation_repo.get_with_guest(reservation_id)  # type: ignore[return-value]
+        updated = await self.reservation_repo.get_with_guest(reservation_id)
+
+        event = BaseEvent(
+            event_type="ReservationCheckedOut",
+            aggregate_type="Reservation",
+            aggregate_id=str(reservation_id),
+            payload=ReservationCheckedOut(
+                reservation_id=reservation_id, room_id=res.room_id, status="CHECKED_OUT"
+            ).model_dump(mode="json"),
+        )
+        await self.publisher.publish(event, BOOKING_EVENTS)
+        return updated  # type: ignore[return-value]
 
     async def cancel(self, reservation_id: uuid.UUID, payload: CancellationRequest) -> Reservation:
         res = await self._transition(reservation_id, "CANCELLED")
@@ -148,4 +222,15 @@ class BookingService:
             "cancelled_at": datetime.now(timezone.utc),
             "cancellation_reason": payload.reason,
         })
-        return await self.reservation_repo.get_with_guest(reservation_id)  # type: ignore[return-value]
+        updated = await self.reservation_repo.get_with_guest(reservation_id)
+
+        event = BaseEvent(
+            event_type="ReservationCancelled",
+            aggregate_type="Reservation",
+            aggregate_id=str(reservation_id),
+            payload=ReservationCancelled(
+                reservation_id=reservation_id, status="CANCELLED", cancellation_reason=payload.reason
+            ).model_dump(mode="json"),
+        )
+        await self.publisher.publish(event, BOOKING_EVENTS)
+        return updated  # type: ignore[return-value]

@@ -4,7 +4,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.dependencies import get_event_publisher
 from app.db.session import get_db
+from app.producers.base import EventPublisher
 from app.repositories.booking import GuestRepository, ReservationRepository
 from app.repositories.hotel import RoomRepository
 from app.schemas.booking import (
@@ -21,11 +23,15 @@ from app.services.booking import BookingService
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
 
-def get_booking_service(db: AsyncSession = Depends(get_db)) -> BookingService:
+def get_booking_service(
+    db: AsyncSession = Depends(get_db),
+    publisher: EventPublisher = Depends(get_event_publisher),
+) -> BookingService:
     return BookingService(
         reservation_repo=ReservationRepository(db),
         guest_repo=GuestRepository(db),
         room_repo=RoomRepository(db),
+        publisher=publisher,
     )
 
 

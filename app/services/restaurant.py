@@ -5,7 +5,10 @@ from typing import Sequence
 
 from fastapi import HTTPException, status
 
+from app.events.schemas import BaseEvent, OrderCancelled, OrderCompleted, OrderCreated, OrderUpdated
+from app.events.topics import RESTAURANT_EVENTS
 from app.models.restaurant import FoodCategory, MenuItem, RestaurantOrder, RestaurantTable
+from app.producers.base import EventPublisher
 from app.repositories.restaurant import (
     FoodCategoryRepository,
     MenuItemRepository,
@@ -32,12 +35,14 @@ class RestaurantService:
         table_repo: RestaurantTableRepository,
         order_repo: OrderRepository,
         order_item_repo: OrderItemRepository,
+        publisher: EventPublisher,
     ) -> None:
         self.category_repo = category_repo
         self.menu_repo = menu_repo
         self.table_repo = table_repo
         self.order_repo = order_repo
         self.order_item_repo = order_item_repo
+        self.publisher = publisher
 
     # ── Categories ────────────────────────────────────────────────────────────
 
@@ -100,7 +105,18 @@ class RestaurantService:
             "opened_at": datetime.now(timezone.utc),
             "total_amount": Decimal("0.00"),
         })
-        return await self.order_repo.get_with_items(new_order.id)  # type: ignore[return-value]
+        order = await self.order_repo.get_with_items(new_order.id)
+
+        event = BaseEvent(
+            event_type="OrderCreated",
+            aggregate_type="RestaurantOrder",
+            aggregate_id=str(order.id),
+            payload=OrderCreated(
+                order_id=order.id, branch_id=order.branch_id, status=order.status, total_amount=order.total_amount
+            ).model_dump(mode="json"),
+        )
+        await self.publisher.publish(event, RESTAURANT_EVENTS)
+        return order  # type: ignore[return-value]
 
     async def add_item(self, order_id: uuid.UUID, payload: OrderItemCreate) -> RestaurantOrder:
         order = await self.order_repo.get(order_id)
@@ -121,7 +137,18 @@ class RestaurantService:
         })
         new_total = order.total_amount + subtotal
         await self.order_repo.update(order, {"total_amount": new_total})
-        return await self.order_repo.get_with_items(order_id)  # type: ignore[return-value]
+        updated = await self.order_repo.get_with_items(order_id)
+
+        event = BaseEvent(
+            event_type="OrderUpdated",
+            aggregate_type="RestaurantOrder",
+            aggregate_id=str(order_id),
+            payload=OrderUpdated(
+                order_id=order_id, status=updated.status, changes={"item_added": str(payload.menu_item_id)}
+            ).model_dump(mode="json"),
+        )
+        await self.publisher.publish(event, RESTAURANT_EVENTS)
+        return updated  # type: ignore[return-value]
 
     async def remove_item(self, order_id: uuid.UUID, item_id: uuid.UUID) -> RestaurantOrder:
         order = await self.order_repo.get(order_id)
@@ -133,7 +160,18 @@ class RestaurantService:
         new_total = order.total_amount - item.subtotal
         await self.order_item_repo.delete(item)
         await self.order_repo.update(order, {"total_amount": max(new_total, Decimal("0.00"))})
-        return await self.order_repo.get_with_items(order_id)  # type: ignore[return-value]
+        updated = await self.order_repo.get_with_items(order_id)
+
+        event = BaseEvent(
+            event_type="OrderUpdated",
+            aggregate_type="RestaurantOrder",
+            aggregate_id=str(order_id),
+            payload=OrderUpdated(
+                order_id=order_id, status=updated.status, changes={"item_removed": str(item_id)}
+            ).model_dump(mode="json"),
+        )
+        await self.publisher.publish(event, RESTAURANT_EVENTS)
+        return updated  # type: ignore[return-value]
 
     async def close_order(self, order_id: uuid.UUID) -> RestaurantOrder:
         order = await self.order_repo.get(order_id)
@@ -142,7 +180,18 @@ class RestaurantService:
         if order.status != "OPEN":
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Order is not open")
         await self.order_repo.update(order, {"status": "CLOSED", "closed_at": datetime.now(timezone.utc)})
-        return await self.order_repo.get_with_items(order_id)  # type: ignore[return-value]
+        updated = await self.order_repo.get_with_items(order_id)
+
+        event = BaseEvent(
+            event_type="OrderCompleted",
+            aggregate_type="RestaurantOrder",
+            aggregate_id=str(order_id),
+            payload=OrderCompleted(
+                order_id=order_id, status=updated.status, total_amount=updated.total_amount
+            ).model_dump(mode="json"),
+        )
+        await self.publisher.publish(event, RESTAURANT_EVENTS)
+        return updated  # type: ignore[return-value]
 
     async def cancel_order(self, order_id: uuid.UUID) -> RestaurantOrder:
         order = await self.order_repo.get(order_id)
@@ -153,4 +202,13 @@ class RestaurantService:
         if order.status == "CANCELLED":
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Order is already cancelled")
         await self.order_repo.update(order, {"status": "CANCELLED"})
-        return await self.order_repo.get_with_items(order_id)  # type: ignore[return-value]
+        updated = await self.order_repo.get_with_items(order_id)
+
+        event = BaseEvent(
+            event_type="OrderCancelled",
+            aggregate_type="RestaurantOrder",
+            aggregate_id=str(order_id),
+            payload=OrderCancelled(order_id=order_id, status=updated.status).model_dump(mode="json"),
+        )
+        await self.publisher.publish(event, RESTAURANT_EVENTS)
+        return updated  # type: ignore[return-value]
