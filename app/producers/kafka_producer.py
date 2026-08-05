@@ -20,13 +20,22 @@ class KafkaEventPublisher(EventPublisher):
         self._producer: AIOKafkaProducer | None = None
 
     async def start(self) -> None:
-        self._producer = AIOKafkaProducer(
+        producer = AIOKafkaProducer(
             bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS,
             client_id=settings.KAFKA_CLIENT_ID,
             value_serializer=_serialize,
             key_serializer=lambda k: k.encode("utf-8") if k else None,
         )
-        await self._producer.start()
+        try:
+            await producer.start()
+        except Exception:
+            logger.warning(
+                "Kafka unavailable, continuing without event publishing",
+                extra={"bootstrap_servers": settings.KAFKA_BOOTSTRAP_SERVERS},
+                exc_info=True,
+            )
+            return
+        self._producer = producer
         logger.info("Kafka producer started", extra={"bootstrap_servers": settings.KAFKA_BOOTSTRAP_SERVERS})
 
     async def stop(self) -> None:
@@ -36,6 +45,7 @@ class KafkaEventPublisher(EventPublisher):
 
     async def publish(self, event: BaseEvent, topic: str) -> None:
         if self._producer is None:
-            raise RuntimeError("KafkaEventPublisher.start() must be called before publish()")
+            logger.debug("Kafka producer unavailable, dropping event", extra={"topic": topic})
+            return
         await self._producer.send_and_wait(topic, value=event, key=event.aggregate_id)
         events_produced_total.labels(topic=topic, event_type=event.event_type).inc()
