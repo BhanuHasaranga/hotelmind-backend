@@ -2,10 +2,8 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
-from fastapi.exceptions import RequestValidationError
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 import app.models  # noqa: F401 — ensures all SQLAlchemy models register before mapper config
 from app.core.config import settings
@@ -65,18 +63,6 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
-    @app.exception_handler(RequestValidationError)
-    async def debug_validation_handler(request: Request, exc: RequestValidationError):
-        raw_body = await request.body()
-        logger.warning(
-            "Validation error on %s %s | headers=%s | raw_body=%r",
-            request.method,
-            request.url.path,
-            dict(request.headers),
-            raw_body,
-        )
-        return JSONResponse(status_code=422, content={"detail": exc.errors()})
 
     app.include_router(health_router.router)
     app.include_router(auth_router.router, prefix="/api/v1")
