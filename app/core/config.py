@@ -48,7 +48,7 @@ class Settings(BaseSettings):
 
     # ML service bridge (Phase 3)
     ML_BASE_URL: str = "http://localhost:8110"
-    ML_REQUEST_TIMEOUT_SECONDS: float = 15.0
+    ML_REQUEST_TIMEOUT_SECONDS: float = 60.0
 
 
 settings = Settings()
