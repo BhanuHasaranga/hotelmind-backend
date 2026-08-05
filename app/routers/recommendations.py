@@ -175,6 +175,19 @@ async def upsert_pricing_guardrail(
     return await svc.pricing_guardrail_repo.create(data)
 
 
+@router.delete("/guardrails/pricing/{guardrail_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_pricing_guardrail(
+    guardrail_id: uuid.UUID,
+    svc: RecommendationServiceDep,
+    current_user: User = Depends(require_roles("OWNER", "REVENUE_MANAGER")),
+):
+    existing = await svc.pricing_guardrail_repo.get(guardrail_id)
+    if existing is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Guardrail not found")
+    scope_branch(current_user, existing.branch_id)
+    await svc.pricing_guardrail_repo.delete(existing)
+
+
 @router.get("/guardrails/staffing", response_model=list[StaffingGuardrailOut])
 async def list_staffing_guardrails(
     svc: RecommendationServiceDep,
