@@ -20,12 +20,6 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
             cd /opt/hotelmind/hotelmind-infra
-            echo "=== DEBUG: pwd and directory listing ==="
-            pwd
-            ls -la
-            echo "=== DEBUG: docker compose version ==="
-            docker compose version
-            echo "=== END DEBUG ==="
             docker compose build backend consumer-worker
             docker compose up -d backend consumer-worker
             sleep 8
