@@ -33,12 +33,12 @@ Redis serves two purposes in Phase 7:
 
 The individual metric keys (`occupancy`, `revenue`, `booking_count`,
 `restaurant_sales`) are written incrementally by consumer handlers as events
-arrive — they represent a live running read-model, separate from the
+arrive - they represent a live running read-model, separate from the
 periodically-refreshed `summary` cache entry.
 
 ## Idempotency
 
-`app/consumers/base.py` calls `mark_event_seen()` (a `SET NX EX` — atomic
+`app/consumers/base.py` calls `mark_event_seen()` (a `SET NX EX` - atomic
 "set if not exists") before invoking a handler. If the event was already
 seen (e.g. re-delivered after a consumer restart before offset commit), the
 handler is skipped entirely and the message is treated as done.

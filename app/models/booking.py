@@ -48,7 +48,7 @@ class Reservation(Base):
 
 
 class OccupancySnapshot(Base):
-    """Daily occupancy snapshot per branch — written on check-in/check-out."""
+    """Daily occupancy snapshot per branch - written on check-in/check-out."""
     __tablename__ = "occupancy_snapshots"
 
     branch_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("branches.id"), nullable=False)

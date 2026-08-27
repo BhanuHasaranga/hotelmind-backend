@@ -11,7 +11,7 @@ _NEGATIVE_WORDS = {
 
 
 def score_sentiment(text: str | None) -> tuple[str, float]:
-    """Trivial keyword-based sentiment scoring — no real ML model, kept minimal
+    """Trivial keyword-based sentiment scoring - no real ML model, kept minimal
     per Phase 7 scope. Returns (label, score) where score is in [-1.0, 1.0].
     """
     if not text:

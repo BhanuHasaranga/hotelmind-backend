@@ -28,7 +28,7 @@ docker compose down -v                      # tear down + remove volumes
 
 See the Quick start section in [README.md](./README.md). You still need a
 Kafka broker and Redis reachable at `KAFKA_BOOTSTRAP_SERVERS` /
-`REDIS_URL` — the simplest way to get those is
+`REDIS_URL` - the simplest way to get those is
 `docker compose up -d zookeeper kafka redis` from `hotelmind-infra` and run
 everything else on the host.
 

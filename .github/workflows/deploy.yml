@@ -27,7 +27,7 @@ jobs:
               sleep 2
             done
             docker compose exec -T backend alembic upgrade head || {
-              echo "Migration failed — rolling back"
+              echo "Migration failed - rolling back"
               cd /opt/hotelmind/hotelmind-backend
               git reset --hard HEAD@{1}
               cd /opt/hotelmind/hotelmind-infra
@@ -41,7 +41,7 @@ jobs:
               sleep 2
             done
             if [ "$healthy" -ne 1 ]; then
-              echo "Health check failed — rolling back"
+              echo "Health check failed - rolling back"
               cd /opt/hotelmind/hotelmind-backend
               git reset --hard HEAD@{1}
               cd /opt/hotelmind/hotelmind-infra

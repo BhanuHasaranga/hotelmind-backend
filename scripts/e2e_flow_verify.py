@@ -34,7 +34,7 @@ def section(title: str) -> None:
 
 
 async def kafka_peek(topic: str, timeout: float = 8.0, match_event_id: str | None = None) -> dict | None:
-    """Consume with a throwaway group from the end backwards briefly — used
+    """Consume with a throwaway group from the end backwards briefly - used
     to *observe* the last matching message on a topic without disturbing the
     real consumer groups' offsets (own group_id, own commit)."""
     consumer = AIOKafkaConsumer(

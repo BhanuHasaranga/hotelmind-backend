@@ -7,7 +7,7 @@ from jose import JWTError, jwt
 from app.core.config import settings
 
 # passlib's bcrypt backend probes `bcrypt.__about__`, which was removed in
-# bcrypt 4.x — that raises inside passlib before hashing even runs. Calling
+# bcrypt 4.x - that raises inside passlib before hashing even runs. Calling
 # the `bcrypt` package directly sidesteps the broken shim entirely.
 
 

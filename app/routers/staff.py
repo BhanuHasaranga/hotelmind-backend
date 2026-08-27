@@ -30,7 +30,7 @@ from app.services.staff import StaffService
 router = APIRouter(prefix="/staff", tags=["Staff"], dependencies=[Depends(get_current_user)])
 
 # Mutating department/employee/schedule management restricted to OWNER and OPS_MANAGER.
-# NOTE: clock_in/clock_out/list_attendance/GETs remain coarse (any authenticated role) —
+# NOTE: clock_in/clock_out/list_attendance/GETs remain coarse (any authenticated role) -
 # a kiosk-style clock-in flow may need broader access; revisit in a later phase.
 manage_roles = Depends(require_roles("OWNER", "OPS_MANAGER"))
 

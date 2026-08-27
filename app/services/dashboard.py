@@ -15,7 +15,7 @@ from app.schemas.dashboard import DailyOccupancy, DailyRevenue, DashboardSummary
 
 
 class DashboardService:
-    """Aggregation queries — reads from the Redis read-model first, falling
+    """Aggregation queries - reads from the Redis read-model first, falling
     back to Postgres (with backfill) on a cache miss. Raw SQL expressions
     remain for the fallback/backfill path.
     """
@@ -66,7 +66,7 @@ class DashboardService:
         )
 
     async def get_occupancy_trend(self, branch_id: uuid.UUID, days: int) -> list[DailyOccupancy]:
-        """Returns per-day occupancy for last N days — single GROUP BY query."""
+        """Returns per-day occupancy for last N days - single GROUP BY query."""
         today = date.today()
         start = today - timedelta(days=days - 1)
         total_rooms, _ = await self._room_counts(branch_id)
@@ -102,7 +102,7 @@ class DashboardService:
         return output
 
     async def get_revenue_trend(self, branch_id: uuid.UUID, days: int) -> list[DailyRevenue]:
-        """Returns per-day revenue for last N days — single GROUP BY query."""
+        """Returns per-day revenue for last N days - single GROUP BY query."""
         today = date.today()
         start = today - timedelta(days=days - 1)
 

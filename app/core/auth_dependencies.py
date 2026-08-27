@@ -53,7 +53,7 @@ def scope_branch(user: User, requested_branch_id: uuid.UUID | None) -> uuid.UUID
     """Resolve which branch a request may operate on.
 
     OWNER may view any branch (or all, if requested_branch_id is None).
-    Every other role is pinned to their own branch_id — any mismatched
+    Every other role is pinned to their own branch_id - any mismatched
     request is rejected rather than silently narrowed, since silently
     narrowing could mask a client-side bug that leaks cross-branch data.
     """

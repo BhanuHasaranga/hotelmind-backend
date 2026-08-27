@@ -54,7 +54,7 @@ async def _kafka_peek(topic: str, timeout: float = 8.0) -> dict | None:
 
 
 async def _ws_listen(duration: float = 6.0, token: str | None = None) -> list[dict]:
-    """Collects every message received during the window — a per-message
+    """Collects every message received during the window - a per-message
     receive timeout must NOT abort the whole listen loop, only end it once
     the overall deadline has passed (a gap between broadcasts is normal)."""
     import websockets

@@ -11,9 +11,9 @@ from app.db.session import get_db
 from app.schemas.dashboard import DailyOccupancy, DailyRevenue, DashboardSummary
 from app.services.dashboard import DashboardService
 
-# Read-only aggregate views — all roles plausibly want dashboard visibility.
+# Read-only aggregate views - all roles plausibly want dashboard visibility.
 # TODO: scope_branch() (app/core/auth_dependencies.py) is NOT yet wired into the
-# query logic here — every authenticated role can currently request any branch_id.
+# query logic here - every authenticated role can currently request any branch_id.
 # Wiring real branch scoping requires deeper service/repo changes; deferred to a later phase.
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"], dependencies=[Depends(get_current_user)])
 

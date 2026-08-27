@@ -57,7 +57,7 @@ async def api_client():
 async def seeded_branch(api_client: httpx.AsyncClient):
     """Returns (hotel, branch, room, guest) tuples from already-seeded data."""
     hotels = (await api_client.get("/api/v1/hotels/")).json()
-    assert hotels, "expected seeded hotel data — run scripts/seed_data.py first"
+    assert hotels, "expected seeded hotel data - run scripts/seed_data.py first"
     hotel = hotels[0]
     branch = hotel["branches"][0]
     rooms = (await api_client.get(f"/api/v1/hotels/branches/{branch['id']}/rooms")).json()

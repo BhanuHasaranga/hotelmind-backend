@@ -15,7 +15,7 @@ _NOTIFIABLE_EVENT_TYPES = {
 
 
 async def handle_notification_event(redis: Redis, event: dict) -> None:
-    """Placeholder notification dispatch — logs a structured notification record.
+    """Placeholder notification dispatch - logs a structured notification record.
     A real implementation would push to email/SMS/push providers; kept minimal
     for Phase 7 scope while still exercising the full consumer pipeline.
     """

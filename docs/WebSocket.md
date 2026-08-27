@@ -2,7 +2,7 @@
 
 ## Endpoint
 
-`GET /ws/dashboard` — clients connect and receive JSON-encoded dashboard
+`GET /ws/dashboard` - clients connect and receive JSON-encoded dashboard
 update messages pushed from the server. There is no client → server protocol;
 the server only reads (and discards) incoming frames to detect disconnects.
 
@@ -19,16 +19,16 @@ Redis Pub/Sub channel by a consumer handler, e.g.:
 
 ## How it works
 
-1. `app/websocket/manager.py` — `ConnectionManager` tracks connected
+1. `app/websocket/manager.py` - `ConnectionManager` tracks connected
    `WebSocket` objects and exposes `broadcast(payload)`.
-2. `app/websocket/router.py` — the `/ws/dashboard` route accepts connections
+2. `app/websocket/router.py` - the `/ws/dashboard` route accepts connections
    and registers them with a module-level `ConnectionManager` instance.
-3. `app/websocket/pubsub_bridge.py` — `redis_pubsub_listener()` runs as a
+3. `app/websocket/pubsub_bridge.py` - `redis_pubsub_listener()` runs as a
    background task started in `app/main.py`'s lifespan. It subscribes to the
    `dashboard:updates` Redis channel and calls `manager.broadcast()` for every
    message received.
 4. Consumers (running in the separate `consumer_worker` process) never talk to
-   WebSocket clients directly — they only publish to Redis. This is what
+   WebSocket clients directly - they only publish to Redis. This is what
    lets the API and consumer-worker processes/containers scale independently.
 
 ## Metrics

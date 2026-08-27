@@ -15,11 +15,11 @@ Consumers -> DLQ topics on exhausted retries
 
 Two separate processes run from the same codebase and Docker image:
 
-1. **API process** (`uvicorn app.main:app`) — serves HTTP + WebSocket traffic.
+1. **API process** (`uvicorn app.main:app`) - serves HTTP + WebSocket traffic.
    Owns the `KafkaEventPublisher` (producer only) and a background task that
    subscribes to the `dashboard:updates` Redis Pub/Sub channel, fanning
    messages out to connected WebSocket clients via `ConnectionManager`.
-2. **Consumer worker process** (`python -m app.consumer_worker`) — runs all 8
+2. **Consumer worker process** (`python -m app.consumer_worker`) - runs all 8
    consumers as asyncio tasks. Never touches the API's WebSocket connections
    directly.
 
@@ -38,7 +38,7 @@ that needs to know about WebSocket clients.
 
 Router → Service → Repository → Model, per existing convention. Services now
 also take an `EventPublisher` constructor argument and call `publish()`
-**after** the repository call that performs the commit — never before, so we
+**after** the repository call that performs the commit - never before, so we
 never publish an event for a change that didn't actually persist.
 
 ## New domains
@@ -46,7 +46,7 @@ never publish an event for a change that didn't actually persist.
 `Payment` and `Review` were added as minimal domains (model + repository +
 service + router) purely to give `PaymentCompleted`/`RefundIssued` and
 `ReviewCreated`/`SentimentCalculated` events something real to originate
-from. Sentiment scoring is a trivial keyword lexicon, not a real ML model —
+from. Sentiment scoring is a trivial keyword lexicon, not a real ML model -
 intentionally out of scope for this phase.
 
 ## Topics

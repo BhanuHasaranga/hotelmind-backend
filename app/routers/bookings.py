@@ -21,7 +21,7 @@ from app.schemas.booking import (
 )
 from app.services.booking import BookingService
 
-# TODO: coarse gate — any authenticated role can create/cancel reservations.
+# TODO: coarse gate - any authenticated role can create/cancel reservations.
 # Revisit with finer role scoping in a later phase.
 router = APIRouter(prefix="/bookings", tags=["Bookings"], dependencies=[Depends(get_current_user)])
 

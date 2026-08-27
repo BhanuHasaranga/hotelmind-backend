@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 async def redis_pubsub_listener(manager: ConnectionManager) -> None:
     """Subscribes to the dashboard:updates Redis Pub/Sub channel and fans out
     incoming messages to connected WebSocket clients. Runs as a background task
-    in the API process's lifespan — this is how DashboardConsumer (a separate
+    in the API process's lifespan - this is how DashboardConsumer (a separate
     process) reaches WebSocket clients without cross-process coupling.
     """
     redis = Redis.from_url(settings.REDIS_URL, decode_responses=True)

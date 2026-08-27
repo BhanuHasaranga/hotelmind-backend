@@ -1,7 +1,7 @@
 """seed_demo_users
 
 Seeds 5 demo users, one per persona role, for local/demo environments.
-Password for all seeded accounts is "demo1234" — this is an intentionally
+Password for all seeded accounts is "demo1234" - this is an intentionally
 public, non-secret demo credential documented on the login page; it must
 never be reused for a real production account.
 

@@ -14,7 +14,7 @@ from app.services.payment import PaymentService
 
 router = APIRouter(prefix="/payments", tags=["Payments"], dependencies=[Depends(get_current_user)])
 
-# Refunds are money-sensitive — restricted to OWNER and OPS_MANAGER.
+# Refunds are money-sensitive - restricted to OWNER and OPS_MANAGER.
 manage_roles = Depends(require_roles("OWNER", "OPS_MANAGER"))
 
 

@@ -35,7 +35,7 @@ class MlRoomTypeMapping(Base):
 
     branch_id needs no equivalent mapping: every ML prediction endpoint
     treats branch_id as an opaque pass-through value it echoes back but never
-    looks up (see hotelmind-ml/src/prediction/predict_*.py) — only
+    looks up (see hotelmind-ml/src/prediction/predict_*.py) - only
     room_type_id is actually used to join against ML's room_type_dim.
     """
 

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-# Alembic Config object — provides access to values in alembic.ini
+# Alembic Config object - provides access to values in alembic.ini
 config = context.config
 
 if config.config_file_name is not None:

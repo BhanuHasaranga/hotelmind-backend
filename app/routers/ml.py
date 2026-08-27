@@ -40,7 +40,7 @@ router = APIRouter(prefix="/ml", tags=["ML"], dependencies=[Depends(get_current_
 
 # A fixed demo branch id is intentional: the ML service's branch_id is a pure
 # pass-through it never looks up against real data (see
-# hotelmind-ml/src/prediction/predict_*.py) — any stable integer works.
+# hotelmind-ml/src/prediction/predict_*.py) - any stable integer works.
 _ML_DEMO_BRANCH_ID = 1
 
 

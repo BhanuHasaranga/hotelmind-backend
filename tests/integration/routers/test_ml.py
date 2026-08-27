@@ -16,7 +16,7 @@ pytestmark = requires_docker
 
 
 class _FakeMLClient(MLClient):
-    """Stands in for the real ml-backend HTTP call — no live ML service
+    """Stands in for the real ml-backend HTTP call - no live ML service
     is available in this test environment, so the proxy layer (guardrail
     clamping, Recommendation persistence, role gating) is what's under
     test here, not the ML model itself."""

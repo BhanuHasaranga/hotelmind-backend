@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-import app.models  # noqa: F401 — ensures all SQLAlchemy models register before mapper config
+import app.models  # noqa: F401 - ensures all SQLAlchemy models register before mapper config
 from app.core.config import settings
 from app.logging.structured import configure_logging
 from app.producers.kafka_producer import KafkaEventPublisher

@@ -12,7 +12,7 @@ manager = ConnectionManager()
 async def dashboard_socket(websocket: WebSocket, token: str | None = None) -> None:
     # Browsers cannot set Authorization headers on the WS handshake, so the
     # token is passed as a query param: ws://.../ws/dashboard?token=<jwt>.
-    # Close with policy-violation (1008) on missing/invalid/expired token —
+    # Close with policy-violation (1008) on missing/invalid/expired token -
     # this check happens before accept() and does not touch the pubsub-bridge
     # broadcast flow at all.
     if token is None:

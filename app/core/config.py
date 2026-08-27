@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
 
-    # CORS — comma-separated string becomes list via validator below
+    # CORS - comma-separated string becomes list via validator below
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]
 
     # Kafka

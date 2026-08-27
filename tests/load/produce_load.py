@@ -1,4 +1,4 @@
-"""Simple asyncio load generator for manual testing — not a pytest test.
+"""Simple asyncio load generator for manual testing - not a pytest test.
 
 Usage:
     python -m tests.load.produce_load --count 1000 --rate 100

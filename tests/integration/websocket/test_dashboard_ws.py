@@ -18,7 +18,7 @@ def build_ws_app() -> FastAPI:
 
 def _test_token() -> str:
     # WS handshake auth is a query-param token (browsers can't set headers on
-    # the upgrade request) — see app/websocket/router.py. Any validly-signed
+    # the upgrade request) - see app/websocket/router.py. Any validly-signed
     # token is enough here since this suite tests broadcast delivery, not
     # authorization rules.
     return create_access_token(subject=uuid.uuid4(), role="OWNER", branch_id=None)

@@ -1,4 +1,4 @@
-# HotelMind Backend — Phase 7: Event-Driven Architecture
+# HotelMind Backend - Phase 7: Event-Driven Architecture
 
 This adds a Kafka-based event-driven layer on top of the existing FastAPI +
 Postgres backend: domain writes publish events, a fleet of consumers project
@@ -7,13 +7,13 @@ updates to the dashboard.
 
 ## Contents
 
-- [Architecture.md](./Architecture.md) — system overview, process model
-- [Kafka.md](./Kafka.md) — topics, producers, consumers, DLQ/retry
-- [WebSocket.md](./WebSocket.md) — `/ws/dashboard` and the Redis pub/sub bridge
-- [Redis.md](./Redis.md) — key naming, cache-aside pattern, idempotency
-- [SequenceDiagrams.md](./SequenceDiagrams.md) — Mermaid diagrams for every flow
-- [Deployment.md](./Deployment.md) — Docker/compose, running locally
-- [Troubleshooting.md](./Troubleshooting.md) — common issues
+- [Architecture.md](./Architecture.md) - system overview, process model
+- [Kafka.md](./Kafka.md) - topics, producers, consumers, DLQ/retry
+- [WebSocket.md](./WebSocket.md) - `/ws/dashboard` and the Redis pub/sub bridge
+- [Redis.md](./Redis.md) - key naming, cache-aside pattern, idempotency
+- [SequenceDiagrams.md](./SequenceDiagrams.md) - Mermaid diagrams for every flow
+- [Deployment.md](./Deployment.md) - Docker/compose, running locally
+- [Troubleshooting.md](./Troubleshooting.md) - common issues
 
 ## Quick start
 

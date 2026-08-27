@@ -12,7 +12,7 @@ from app.repositories.review import ReviewRepository
 from app.schemas.review import ReviewCreate, ReviewResponse
 from app.services.review import ReviewService
 
-# No extra role restriction — any authenticated role (especially GUEST_EXPERIENCE_MANAGER)
+# No extra role restriction - any authenticated role (especially GUEST_EXPERIENCE_MANAGER)
 # plausibly creates/reads reviews. Coarse for this pass; TODO revisit later.
 router = APIRouter(prefix="/reviews", tags=["Reviews"], dependencies=[Depends(get_current_user)])
 

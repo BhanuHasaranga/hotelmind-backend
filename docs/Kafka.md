@@ -12,7 +12,7 @@
 | `ml.predictions` | (external ML pipeline, not in this repo) | MLConsumer, AuditConsumer |
 | `dashboard.events` | (aggregation/ML jobs) | DashboardConsumer, AuditConsumer |
 | `notification.events` | (reserved) | AuditConsumer |
-| `audit.events` | (reserved) | — |
+| `audit.events` | (reserved) | - |
 
 Every topic also has a corresponding `<topic>.dlq` topic that consumers
 publish to after exhausting retries (`KAFKA_DLQ_SUFFIX` in settings).
@@ -43,7 +43,7 @@ on the same partition and are processed in order per-aggregate.
 
 ## Producer
 
-`app/producers/kafka_producer.py` — `KafkaEventPublisher` wraps
+`app/producers/kafka_producer.py` - `KafkaEventPublisher` wraps
 `AIOKafkaProducer`, started/stopped in the API process's lifespan. Every
 `publish()` call increments `events_produced_total{topic,event_type}`.
 
@@ -67,7 +67,7 @@ Each concrete consumer subclasses `BaseConsumer` and provides `name` and
   underlying `AIOKafkaConsumer`/`AIOKafkaProducer`/Redis connections.
 
 Handler logic itself lives in `app/handlers/*.py` as plain async functions
-`(redis, event_dict) -> None` — no Kafka objects involved — so it's directly
+`(redis, event_dict) -> None` - no Kafka objects involved - so it's directly
 unit-testable and reusable from `stream_processing/replay.py`.
 
 ## Running the consumer fleet

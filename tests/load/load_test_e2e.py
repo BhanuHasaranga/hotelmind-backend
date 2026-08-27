@@ -16,7 +16,7 @@ access to kafka:29092 and redis:6379):
 
 Scale down from the nominal 1000/500/800/500/100 spec if the single-broker,
 single-partition local Kafka can't keep up within a reasonable wall-clock
-budget — pass smaller counts and note it in the report.
+budget - pass smaller counts and note it in the report.
 """
 
 from __future__ import annotations

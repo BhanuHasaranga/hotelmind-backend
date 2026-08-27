@@ -13,6 +13,6 @@ class Review(Base):
     guest_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("guests.id"), nullable=True)
     rating: Mapped[int] = mapped_column(Integer, nullable=False)
     comment: Mapped[str | None] = mapped_column(Text)
-    # POSITIVE | NEGATIVE | NEUTRAL — filled in once sentiment scoring runs
+    # POSITIVE | NEGATIVE | NEUTRAL - filled in once sentiment scoring runs
     sentiment: Mapped[str | None] = mapped_column(String(20))
     sentiment_score: Mapped[float | None] = mapped_column(Float)

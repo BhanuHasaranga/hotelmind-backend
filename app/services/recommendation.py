@@ -32,7 +32,7 @@ class RecommendationService:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=(
-                    "This room type has no ML mapping yet — an OWNER or OPS_MANAGER "
+                    "This room type has no ML mapping yet - an OWNER or OPS_MANAGER "
                     "must map it via PUT /ml/room-type-mappings before pricing/occupancy "
                     "predictions can run for it."
                 ),
